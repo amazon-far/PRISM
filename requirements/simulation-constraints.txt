@@ -6,7 +6,7 @@ pydantic==2.11.10
 onnx==1.22.0
 onnxruntime==1.25.1
 # Retain typing-extensions 4.15 compatibility in the web dependency chain.
-anyio==4.11.0
+anyio==4.14.2
 # requests 2.32.3 supports chardet versions below 6.
 chardet==5.2.0
 # Isaac/legacy tooling still imports pkg_resources at runtime.
