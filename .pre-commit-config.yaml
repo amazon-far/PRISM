@@ -1,0 +1,44 @@
+repos:
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.11.8
+  hooks:
+  - id: ruff
+    args: [ --fix ]
+  - id: ruff-format
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.14.1
+  hooks:
+  - id: mypy
+    pass_filenames: true
+    additional_dependencies: [pydantic]
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v20.1.3
+  hooks:
+  - id: clang-format
+    files: \.(c|cc|cxx|cpp|frag|glsl|h|hpp|hxx|ih|ispc|ipp|java|m|mm|proto|textproto|vert|cu)$
+    exclude: ^generated/.*$
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.5.0
+  hooks:
+  - id: end-of-file-fixer
+    # exclude .dae, .obj, .mtl, .stl files
+    exclude: \.(dae|obj|mtl|stl)$
+  - id: trailing-whitespace
+    exclude: \.(dae|obj|mtl|stl)$
+  - id: mixed-line-ending
+    args: [--fix=lf] # Ensures consistent line endings (LF) and removes CR
+    exclude: \.(dae|obj|mtl|stl)$
+- repo: local
+  hooks:
+  - id: check-extra-index-url
+    name: Check for --extra-index-url usage
+    entry: bash
+    args:
+      - -c
+      - |
+        if grep -r --include="*.sh" --include="*.py" --include="*.txt" --include="*.cfg" --include="*.ini" "\-\-extra-index-url" .; then
+          echo "ERROR: --extra-index-url found. Use --index-url instead to prevent dependency confusion attacks."
+          exit 1
+        fi
+    language: system
+    pass_filenames: false

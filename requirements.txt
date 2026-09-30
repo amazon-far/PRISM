@@ -1,0 +1,2 @@
+holosoma @ git+https://github.com/Z1hanW/holosoma.git@a6ae0a64a3482ec8d44b25d3bc475a3e3d0b1366#subdirectory=src/holosoma
+holosoma-inference @ git+https://github.com/Z1hanW/holosoma.git@a6ae0a64a3482ec8d44b25d3bc475a3e3d0b1366#subdirectory=src/holosoma_inference
