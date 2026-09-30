@@ -13,7 +13,8 @@ Training and released checkpoints are on [`main`](https://github.com/amazon-far/
 
 **GPU computer:** Linux x86_64, Python 3.10, and an NVIDIA driver supporting CUDA 12.4.
 On Ubuntu, the system packages are `git`, `build-essential`, `python3.10-venv`,
-`python3.10-dev`, `libgl1` and `libglib2.0-0`.
+`python3.10-dev`, `libgl1`, `libegl1`, `libglib2.0-0` and `libusb-1.0-0`.
+Python 3.10 may need to be installed separately on your distribution.
 
 ```bash
 git clone --branch sim2real --recurse-submodules https://github.com/amazon-far/PRISM.git
@@ -25,10 +26,15 @@ bash install.sh
 
 The installer initializes the pinned FFS submodule and installs CUDA PyTorch,
 FFS dependencies, pyrealsense2, OpenCV, ZeroMQ and the Unitree SDK.
+The default FFS installation uses the resolved versions in `constraints-ffs.txt`.
+Use a fresh environment without `--system-site-packages`, separate from the
+Python 3.11 simulation environment. No pre-existing HoloSoma environment or
+local CUDA toolkit is required. Run `python scripts/check_install.py` and
+`python -m pip check` to verify installation without connecting to the robot.
 
-**Robot camera host:** clone the same branch, create and activate a Python environment,
+**Robot camera host:** clone the same branch, create and activate a Python 3.10 environment,
 then run `bash install.sh --relay`. This installs NumPy, pyrealsense2 and ZeroMQ;
-also install the system packages `usbutils` and `psmisc`. Configure SSH access
+also install the system packages `libusb-1.0-0`, `usbutils` and `psmisc`. Configure SSH access
 from the GPU computer to this host.
 
 ## Run

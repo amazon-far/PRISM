@@ -25,6 +25,13 @@ def main():
                     'holosoma.models.ffs.infer']
     for module in modules:
         importlib.import_module(module)
+    if not args.relay:
+        root = Path(__file__).resolve().parents[1]
+        for name in ('holosoma', 'holosoma_inference'):
+            package = importlib.import_module(name)
+            expected = root / 'src' / name
+            if not Path(package.__file__).resolve().is_relative_to(expected.resolve()):
+                parser.error(f'{name} was imported from another checkout; unset PYTHONPATH and run bash install.sh.')
     print(f'Installation verified: {len(modules)} imports; no camera or robot opened.')
     if not args.relay and not args.native_depth:
         import torch
