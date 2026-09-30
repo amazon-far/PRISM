@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="680" viewBox="0 0 1400 680" role="img" aria-labelledby="title desc">
+<title id="title">Neck and camera pitch: trained at 37 degrees, compared with 47 degrees</title>
+<desc id="desc">Two side-view schematics measure camera tilt down from the torso-forward horizontal. The left uses the trained 37-degree angle. The right shows a 47-degree angle, ten degrees further down. Robot geometry and the view cones are schematic.</desc>
+<defs><marker id="green" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6" fill="none" stroke="#087f68" stroke-width="1.5"/></marker><marker id="orange" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6" fill="none" stroke="#bc5a1c" stroke-width="1.5"/></marker></defs>
+<rect width="1400" height="680" rx="24" fill="#f5f7fa"/>
+<g font-family="Arial, Helvetica, sans-serif" fill="#172538">
+<text x="56" y="62" font-size="30" font-weight="700">Set the neck / camera pitch to 37°</text>
+<text x="56" y="98" font-size="19" fill="#536476">Match the camera orientation used to train the released policy.</text>
+
+<g transform="translate(40,130)"><rect width="640" height="452" rx="20" fill="white" stroke="#dce3ea"/><rect x="24" y="22" width="290" height="32" rx="16" fill="#087f68" fill-opacity="0.10"/><text x="42" y="44" fill="#087f68" font-size="15" font-weight="700" letter-spacing="0.8">TRAINED CONFIGURATION</text><text x="28" y="91" font-size="26" font-weight="700">37° · use this mounting angle</text>
+<path d="M85 258 Q78 239 96 228 L174 228 Q199 234 202 258 L215 370 L75 370 Z" fill="#e0e6ed" stroke="#7d8ca0" stroke-width="2"/>
+<rect x="115" y="201" width="49" height="50" rx="13" fill="#c2ccd9" stroke="#7d8ca0" stroke-width="2"/>
+<path d="M98 276 L93 344 M183 273 L192 344" stroke="#aab7c6" stroke-width="12" stroke-linecap="round"/>
+<text x="83" y="402" font-size="16" fill="#66788b">Upright torso</text>
+<polygon points="156.00,196.00 403.40,290.97 315.48,407.64" fill="#087f68" fill-opacity="0.06"/>
+<line x1="156" y1="196" x2="560" y2="196" stroke="#a7b4c3" stroke-width="2" stroke-dasharray="7 6"/><text x="360" y="177" font-size="15" fill="#66788b">Torso-forward horizontal</text>
+<line x1="156" y1="196" x2="367.64" y2="355.48" stroke="#087f68" stroke-width="3" marker-end="url(#green)"/>
+<path d="M256 196 A100 100 0 0 1 235.86 256.18" fill="none" stroke="#087f68" stroke-width="2"/><text x="268" y="237" font-size="25" font-weight="700" fill="#087f68">37°</text>
+<g transform="translate(156,196) rotate(37)"><rect x="-62" y="-28" width="87" height="53" rx="16" fill="#283b51"/><rect x="12" y="-17" width="32" height="32" rx="8" fill="#c8d4e2" stroke="#283b51" stroke-width="2"/><circle cx="29" cy="-1" r="7" fill="#087f68"/></g>
+<text x="330" y="419" font-size="17" fill="#087f68">Camera viewing direction</text></g>
+<g transform="translate(720,130)"><rect width="640" height="452" rx="20" fill="white" stroke="#dce3ea"/><rect x="24" y="22" width="290" height="32" rx="16" fill="#bc5a1c" fill-opacity="0.10"/><text x="42" y="44" fill="#bc5a1c" font-size="15" font-weight="700" letter-spacing="0.8">COMPARISON</text><text x="28" y="91" font-size="26" font-weight="700">47° · 10° further downward</text>
+<path d="M85 258 Q78 239 96 228 L174 228 Q199 234 202 258 L215 370 L75 370 Z" fill="#e0e6ed" stroke="#7d8ca0" stroke-width="2"/>
+<rect x="115" y="201" width="49" height="50" rx="13" fill="#c2ccd9" stroke="#7d8ca0" stroke-width="2"/>
+<path d="M98 276 L93 344 M183 273 L192 344" stroke="#aab7c6" stroke-width="12" stroke-linecap="round"/>
+<text x="83" y="402" font-size="16" fill="#66788b">Upright torso</text>
+<polygon points="156.00,196.00 383.15,332.49 276.31,432.12" fill="#bc5a1c" fill-opacity="0.06"/>
+<line x1="156" y1="196" x2="560" y2="196" stroke="#a7b4c3" stroke-width="2" stroke-dasharray="7 6"/><text x="360" y="177" font-size="15" fill="#66788b">Torso-forward horizontal</text>
+<line x1="156" y1="196" x2="336.73" y2="389.81" stroke="#bc5a1c" stroke-width="3" marker-end="url(#orange)"/>
+<path d="M256 196 A100 100 0 0 1 224.20 269.14" fill="none" stroke="#bc5a1c" stroke-width="2"/><text x="268" y="237" font-size="25" font-weight="700" fill="#bc5a1c">47°</text>
+<g transform="translate(156,196) rotate(47)"><rect x="-62" y="-28" width="87" height="53" rx="16" fill="#283b51"/><rect x="12" y="-17" width="32" height="32" rx="8" fill="#c8d4e2" stroke="#283b51" stroke-width="2"/><circle cx="29" cy="-1" r="7" fill="#bc5a1c"/></g>
+<text x="330" y="419" font-size="17" fill="#bc5a1c">Camera viewing direction</text></g>
+<text x="56" y="624" font-size="19" font-weight="700">Training pitch: 37°.</text><text x="300" y="624" font-size="19" fill="#536476">47° changes the depth view seen by the policy.</text>
+<text x="56" y="655" font-size="15" fill="#6e7e8e">Side-view schematic · angles measured down from torso-forward horizontal · not a mechanical drawing</text></g></svg>

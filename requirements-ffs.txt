@@ -1,0 +1,6 @@
+# Upstream model dependencies; the submodule is pinned by Git.
+-r requirements.txt
+-r third_party/Fast-FoundationStereo/requirements.txt
+torch==2.6.0
+torchvision==0.21.0
+xformers==0.0.29.post3

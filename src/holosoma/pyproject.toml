@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "holosoma"
+version = "0.0.1+prism.sim2real"
+description = "PRISM camera-depth deployment utilities"
+requires-python = ">=3.10,<3.11"
+license = {text = "Apache-2.0"}
+dependencies = [
+    "numpy==2.2.6",
+    "opencv-contrib-python==4.13.0.92",
+    "loguru",
+    "tyro==1.0.13",
+    "typing_extensions",
+    "pyrealsense2==2.58.4.10922",
+    "pyzmq>=25",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["holosoma*"]
+namespaces = true

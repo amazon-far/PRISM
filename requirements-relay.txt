@@ -1,0 +1,4 @@
+# Camera host only: no PyTorch, CUDA, or robot policy SDK needed.
+numpy==2.2.6
+pyrealsense2==2.58.4.10922
+pyzmq>=25

@@ -1,1 +1,6 @@
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+Fast-FoundationStereo is an independent Git submodule from NVIDIA:
+https://github.com/NVlabs/Fast-FoundationStereo
+Its license and copyright notices are retained in third_party/Fast-FoundationStereo/LICENSE.txt.
+The repository's Apache-2.0 license does not replace the submodule's license.

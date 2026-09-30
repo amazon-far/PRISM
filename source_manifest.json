@@ -1,0 +1,535 @@
+{
+  "source_repository": "https://github.com/Z1hanW/holosoma",
+  "source_commit": "87760c7b8676ca7f9acc295de9bb2ab233e91537",
+  "source_branch": "sim2real",
+  "scope": "G1 native-camera and Fast-FoundationStereo deployment",
+  "adaptations": [
+    "Explicit model paths and relay endpoints instead of private defaults.",
+    "Portable launchers, virtual-environment installation, and source-pinned FFS submodule.",
+    "FFS adapter defaults to the local submodule; optional GUM prediction remains excluded.",
+    "OpenCV contrib supplies the shared cv2 package; camera and relay dependencies are declared.",
+    "Remote stereo rejects malformed packet lengths before array decoding.",
+    "Depth startup checks preserve the source saturation exception and additionally check every sampled frame.",
+    "Remote camera services are opt-in; diagnostic recording is opt-in; GPU diagnostics are read-only.",
+    "Whitespace and comments cleaned without changing the source controller or depth algorithms."
+  ],
+  "files": [
+    {
+      "path": "real_depth.sh",
+      "source_sha256": "9802003cd359b3975db88a5e2df423ffff55db8df66485579ee74ad47bb9d06b",
+      "release_sha256": "4f327e7efd191d154960570967f683d2d84a484ae17855bdc05b602f94ca6069",
+      "unchanged": false
+    },
+    {
+      "path": "real_drop.sh",
+      "source_sha256": "03e6a93b8ddf70c0fc1ad1a989aeb622b0cf9192e1c42a6e22a839dac2adf973",
+      "release_sha256": "a414ab4dddb9b829c2edbe65bb2b3d22689fe8f4c3f44467524d1a0eb7af1f0e",
+      "unchanged": false
+    },
+    {
+      "path": "real_ffs.sh",
+      "source_sha256": "c2c9d441e32eeefcc7c23fd9f999886ae8fcd78ee2efbfe41d87b2d1b4d555bf",
+      "release_sha256": "ad58e9793ec6bdb8f437d4c689264d4c6262e322c3ae549599beea4cf23917af",
+      "unchanged": false
+    },
+    {
+      "path": "real_ffs_depth.sh",
+      "source_sha256": "18e4cb7a95163d0f35580c39e3f0cf9a2c9e6f7f4a20423524d1bbbd7f97adad",
+      "release_sha256": "560ec9539df3d7c5c137a5afb20b1c97651ad50a5b43eaaf38906ab122407c49",
+      "unchanged": false
+    },
+    {
+      "path": "real_ffs_run.sh",
+      "source_sha256": "51b8c786312cbb9b608951757d0ebe74a345a4079861e7458e61d5a989cece10",
+      "release_sha256": "69970b2ed97b2f149e035cf4ef7e25710d46c363a2c460bf9e91ce2e8726fa80",
+      "unchanged": false
+    },
+    {
+      "path": "real_run.sh",
+      "source_sha256": "31afb5543657ceac72a5b37ad6f31b970e9d9aef6007af481b18df04d89e48ff",
+      "release_sha256": "74ef6e2e6247b8f21a1ed7ef7b13f0ee063ca45a649e3d76a53cba596450b014",
+      "unchanged": false
+    },
+    {
+      "path": "scripts/capture_depth_pairs.py",
+      "source_sha256": "03620987c97932f163eb4c8d6bbacbfdf54a84e6804f22cb7b497ae6098869a1",
+      "release_sha256": "03620987c97932f163eb4c8d6bbacbfdf54a84e6804f22cb7b497ae6098869a1",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/check_gpu_perf.sh",
+      "source_sha256": "80a19abae54747d9b092fe9cee24e8cea2d40c636f2b1b551431cec77e77543f",
+      "release_sha256": "b95281500ab21aa69381656f2d9fe4ae6ba443e8c2b8dc9e0721fb955dd0584b",
+      "unchanged": false
+    },
+    {
+      "path": "scripts/compare_depth_sources.py",
+      "source_sha256": "28aee28b310ff75ddb3cf1593b003cc9793182769c8046b0d2e66df873b35e8e",
+      "release_sha256": "28aee28b310ff75ddb3cf1593b003cc9793182769c8046b0d2e66df873b35e8e",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/compare_real_depth_evidence.py",
+      "source_sha256": "1d32d4ed3cd7c0cc5461970b212cda78d03ec0c27b4b842b70753ac44c354731",
+      "release_sha256": "1d32d4ed3cd7c0cc5461970b212cda78d03ec0c27b4b842b70753ac44c354731",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/depth_relay_pub.py",
+      "source_sha256": "6ebbdc216cb5bf751c807881bb872220be42a874fad2e892439802e27c55a06a",
+      "release_sha256": "6ebbdc216cb5bf751c807881bb872220be42a874fad2e892439802e27c55a06a",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/depth_relay_sub.py",
+      "source_sha256": "8baccef1d3a1e12e256692800f407d85b0058dbb7837245af60cb2185c5e19e7",
+      "release_sha256": "8baccef1d3a1e12e256692800f407d85b0058dbb7837245af60cb2185c5e19e7",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/real_ffs_relay.sh",
+      "source_sha256": "fa9c8ce3054c6a6d91413b0d4d558296db55e6c9d63450459a6265ec737784c9",
+      "release_sha256": "3acb2c040ef65ebfafcffdbad7900c6e5ff074f9231025fb0ec61ac1d2c88239",
+      "unchanged": false
+    },
+    {
+      "path": "scripts/show_policy_command.py",
+      "source_sha256": "8316c02b6f2030c304b647dbfa3f364322e0c68b90febe2a099e07536533b8cc",
+      "release_sha256": "8316c02b6f2030c304b647dbfa3f364322e0c68b90febe2a099e07536533b8cc",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/stereo_relay_pub.py",
+      "source_sha256": "92867dfa4b6cd9c0198b71cc94c47a8a1e48230000d924cf446fd5e54c57cb6b",
+      "release_sha256": "2eeb05f3090fb778de76a76a6da14f54c38ce95012722296850d3d19da6dde48",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma/holosoma/__init__.py",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "release_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma/holosoma/config_types/image_server.py",
+      "source_sha256": "bf16aaf43a7216d0f07b4f2e68b90dc6336f99534fd3b54d37cfa97f8a73f2ea",
+      "release_sha256": "b0e2ed2728a27526c24a650a33740a295eff40ba20b913e3278dd65fcf09145b",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma/holosoma/config_values/image_server.py",
+      "source_sha256": "3bf8572d3b4869da728f602ad32a2f0bb81d7e4ae246648f1e44c98777072f67",
+      "release_sha256": "a90dcb8cc9b6e0cb7155ab588b45db980de027954d30b40b57db96f052b0fb1f",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma/holosoma/models/ffs/__init__.py",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "release_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma/holosoma/models/ffs/infer.py",
+      "source_sha256": "c263dea625623e5068b9c6f1248dcdb0211bcab2242a315b8cc753ddf90e5987",
+      "release_sha256": "9bc7a22f1316d8197f375f154d6f392a324607e3d4969f8a61c0a279821b5325",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma/holosoma/sensors/image_server.py",
+      "source_sha256": "391909135908339e2270fd1360669b4fc67b27515fc208c729df6fffeee14ef7",
+      "release_sha256": "69411685a068af418e14f6bbb643b03346c4a7bbfbd706c9e3e4aaed8290c3aa",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma/holosoma/sensors/realsense.py",
+      "source_sha256": "5cec3f714c3c7ca72c6e7ed0adcacd4ee0d5245920fb02f5814dd50f3f5d4963",
+      "release_sha256": "5cec3f714c3c7ca72c6e7ed0adcacd4ee0d5245920fb02f5814dd50f3f5d4963",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma/holosoma/sensors/remote_stereo.py",
+      "source_sha256": "73340c280c65cc01297c323cba1656b3d5b9f50d566c265ab0d90944d0149e24",
+      "release_sha256": "c85d96def9dec96b6f222966790d12b6a04aa035d78618e28d341fa61b8a58ae",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma/holosoma/sensors/utils.py",
+      "source_sha256": "177046db59da14978e53182a51064a7050bd14da6dd97b0aee9f77444145c3d7",
+      "release_sha256": "177046db59da14978e53182a51064a7050bd14da6dd97b0aee9f77444145c3d7",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma/holosoma/sensors/zed.py",
+      "source_sha256": "d3584ff5f1d9239bc5b7c109154eda2faa22ed13f3de9bd27812df727610b4b6",
+      "release_sha256": "e2058c1217f0bc9c4ce7f0c5bdbdcf6da9568fa92f0caae227ec41a8d2415893",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma/holosoma/utils/__init__.py",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "release_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma/holosoma/utils/deployment_audit.py",
+      "source_sha256": "3be5b04af02f206ccd410b3ca551b043e23208f742c9121d141c2c23a0b99800",
+      "release_sha256": "3be5b04af02f206ccd410b3ca551b043e23208f742c9121d141c2c23a0b99800",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma/holosoma/utils/rate.py",
+      "source_sha256": "b6ed16df56cfa3aa26e90fa48e496d710e0a443cf3e7cf7ea55ed804b274b0fd",
+      "release_sha256": "b6ed16df56cfa3aa26e90fa48e496d710e0a443cf3e7cf7ea55ed804b274b0fd",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/__init__.py",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "release_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/__init__.py",
+      "source_sha256": "ad75bfae1cf379166412ea1f9ba017c48af64bf100c8f87088e03a54565b58b9",
+      "release_sha256": "ad75bfae1cf379166412ea1f9ba017c48af64bf100c8f87088e03a54565b58b9",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_types/__init__.py",
+      "source_sha256": "a8f4de295cefc49f1042ef142ceb6a1c5e4ad883454ede2cc0de9eb32be1bf80",
+      "release_sha256": "a8f4de295cefc49f1042ef142ceb6a1c5e4ad883454ede2cc0de9eb32be1bf80",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_types/camera.py",
+      "source_sha256": "4692a891570ea69c74956ef5157d3cfdbf846bf7c08368124882f84e0be5122c",
+      "release_sha256": "4692a891570ea69c74956ef5157d3cfdbf846bf7c08368124882f84e0be5122c",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_types/inference.py",
+      "source_sha256": "d5c23395bd4bbf8495183344d198a86e826516e31e971baddd0da1170e17f474",
+      "release_sha256": "d5c23395bd4bbf8495183344d198a86e826516e31e971baddd0da1170e17f474",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_types/observation.py",
+      "source_sha256": "311444827ed09d2242c20e81ed9d1d529419ff22f8ee2f3cdc2edcaaf9bfe18b",
+      "release_sha256": "311444827ed09d2242c20e81ed9d1d529419ff22f8ee2f3cdc2edcaaf9bfe18b",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_types/robot.py",
+      "source_sha256": "41b77ecfa24ba9bbd21d01089b3260374f233e1f0293f4fda031514dd35686d5",
+      "release_sha256": "41b77ecfa24ba9bbd21d01089b3260374f233e1f0293f4fda031514dd35686d5",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_types/task.py",
+      "source_sha256": "6c977209c50077feb3b5f066f3bbd3ac58c6660f38f5a7b54cfef5890948fd72",
+      "release_sha256": "6c977209c50077feb3b5f066f3bbd3ac58c6660f38f5a7b54cfef5890948fd72",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_values/__init__.py",
+      "source_sha256": "7596dc587a2b4d244442775fa9d59e57a2d29ad36cee2caf1095295681a8471d",
+      "release_sha256": "7596dc587a2b4d244442775fa9d59e57a2d29ad36cee2caf1095295681a8471d",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_values/camera.py",
+      "source_sha256": "de2592672f790de31091d332c0d0479a6a8a9057348c86c2f7984fd81e35a79f",
+      "release_sha256": "de2592672f790de31091d332c0d0479a6a8a9057348c86c2f7984fd81e35a79f",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_values/inference.py",
+      "source_sha256": "0be83ce7a45b0e91a2135fa996eaab857de398a8f80182ecc980cbd031071a8d",
+      "release_sha256": "0be83ce7a45b0e91a2135fa996eaab857de398a8f80182ecc980cbd031071a8d",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_values/observation.py",
+      "source_sha256": "f81c0daf74aaee8306f5fef0dae95ca380053e29b5137217601ffaf7fc94aa8b",
+      "release_sha256": "f81c0daf74aaee8306f5fef0dae95ca380053e29b5137217601ffaf7fc94aa8b",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_values/robot.py",
+      "source_sha256": "a253bdf5859c7738aa9ffe33fbdc132ed220847329205c95865d954e2bdd55ad",
+      "release_sha256": "a253bdf5859c7738aa9ffe33fbdc132ed220847329205c95865d954e2bdd55ad",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/config_values/task.py",
+      "source_sha256": "d051a2d15ccd906f198a2ba13723dc47d3bb659b5c8f2956bddeccb12894d68e",
+      "release_sha256": "708b76e72af1bb68236df6a543adb3646cc41d6a27c544f689f939bc11bdc71d",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/config/utils.py",
+      "source_sha256": "c3cd65298296fade640395508444feaa552fa3427dd8f2978da4d45b0d5e497b",
+      "release_sha256": "c3cd65298296fade640395508444feaa552fa3427dd8f2978da4d45b0d5e497b",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/policies/__init__.py",
+      "source_sha256": "73bc590d5162df60cec9a5be3b7e3ba06940ff0f7acb8712c3ad2a2e38375c70",
+      "release_sha256": "73bc590d5162df60cec9a5be3b7e3ba06940ff0f7acb8712c3ad2a2e38375c70",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/policies/base.py",
+      "source_sha256": "a352834dbf4c3720c82f43ae351783f9e38d25204f91840a69ea32cef7ee8515",
+      "release_sha256": "357bbd83f1e411177b54828a7b49f25deb9b676593efc981573dc5bff98aaa10",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/policies/blind_fall_recovery.py",
+      "source_sha256": "75db558e828eab9166101f387e93fca2bd988f70cfb355c37272f1cf663af837",
+      "release_sha256": "75db558e828eab9166101f387e93fca2bd988f70cfb355c37272f1cf663af837",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/policies/depth_distillation.py",
+      "source_sha256": "428befad81af7d947a78c98a835f00d9e2262858bfbe353d263373262e2eb3ed",
+      "release_sha256": "428befad81af7d947a78c98a835f00d9e2262858bfbe353d263373262e2eb3ed",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/policies/loco_manip_stand_height_wait_depth.py",
+      "source_sha256": "d0209fe3a0694be6f22f1510ccf0a4f15b53092b637db068e723bf014f303907",
+      "release_sha256": "4b8c0f0e4e9f2a01db2cd3d6930fc847058b3de11f66f5f9573f05a12e4aa770",
+      "unchanged": false
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/policies/locomotion.py",
+      "source_sha256": "1926bb9a5d3e516a9e24d0b0930a073d13273c9e4161cc4bdcc9e8eae525c86b",
+      "release_sha256": "1926bb9a5d3e516a9e24d0b0930a073d13273c9e4161cc4bdcc9e8eae525c86b",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/policies/wbt.py",
+      "source_sha256": "eed48db60bbab0efa6c59f4f9908f995c3bcf2bad6d5a15ca284fde2fdd81ea7",
+      "release_sha256": "eed48db60bbab0efa6c59f4f9908f995c3bcf2bad6d5a15ca284fde2fdd81ea7",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/py.typed",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "release_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/run_policy.py",
+      "source_sha256": "f9b0cef3a6ad8f7be4ab9a882ce479508790500e1def434ee3b9bba71bfebd9f",
+      "release_sha256": "f9b0cef3a6ad8f7be4ab9a882ce479508790500e1def434ee3b9bba71bfebd9f",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/__init__.py",
+      "source_sha256": "b6324eae6112d2c747e93fc4dc6c9f79bf706d9663161791f5ec5b4f287cd37a",
+      "release_sha256": "b6324eae6112d2c747e93fc4dc6c9f79bf706d9663161791f5ec5b4f287cd37a",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/base/base_interface.py",
+      "source_sha256": "070e06841ae20c8114621a8259203c332bef0c848394e38503bf1ea9cf3047d4",
+      "release_sha256": "070e06841ae20c8114621a8259203c332bef0c848394e38503bf1ea9cf3047d4",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/booster_interface.py",
+      "source_sha256": "73645e303a4c3d494d6642a03834e6aca5ffc0df86f0a4ebb9f25475816b13b1",
+      "release_sha256": "73645e303a4c3d494d6642a03834e6aca5ffc0df86f0a4ebb9f25475816b13b1",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/command_sender/__init__.py",
+      "source_sha256": "9e4f78ade218377eab70197816e779a8de4f5d71c109f06dc6c95e101b521ef1",
+      "release_sha256": "9e4f78ade218377eab70197816e779a8de4f5d71c109f06dc6c95e101b521ef1",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/command_sender/base/__init__.py",
+      "source_sha256": "acdd48d0bd72379fe3205f7bbe4d9094d8f04b34c63c7c59bce6dc893cc90fe3",
+      "release_sha256": "acdd48d0bd72379fe3205f7bbe4d9094d8f04b34c63c7c59bce6dc893cc90fe3",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/command_sender/base/basic_command_sender.py",
+      "source_sha256": "06e8493621dc225ba96aa2e7bdc31c4f7a94216f9122825f7bb49893b19f7f58",
+      "release_sha256": "06e8493621dc225ba96aa2e7bdc31c4f7a94216f9122825f7bb49893b19f7f58",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/command_sender/booster/__init__.py",
+      "source_sha256": "d632172ff2de5755ccecdb556a627a6ae5da975ed3a65f715433a159fdf30aa6",
+      "release_sha256": "d632172ff2de5755ccecdb556a627a6ae5da975ed3a65f715433a159fdf30aa6",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/command_sender/booster/booster_command_sender.py",
+      "source_sha256": "92f11659ce4601d0913b35508982adf32ad006e20f151734b7d49327dc7008b1",
+      "release_sha256": "92f11659ce4601d0913b35508982adf32ad006e20f151734b7d49327dc7008b1",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/command_sender/booster/joystick_message.py",
+      "source_sha256": "b1677f2655e888073fc12f3e190ef4aca026a5fd28e113c710a4208d26b6d60c",
+      "release_sha256": "b1677f2655e888073fc12f3e190ef4aca026a5fd28e113c710a4208d26b6d60c",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/command_sender/booster/remote_control_service.py",
+      "source_sha256": "a6e8e026f838c46dc6d2396226582ad1c2b5833944e5c35f99bd826a6624f821",
+      "release_sha256": "a6e8e026f838c46dc6d2396226582ad1c2b5833944e5c35f99bd826a6624f821",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/state_processor/__init__.py",
+      "source_sha256": "afff7e0eb6f0dfb2b4c52a37b3d5ab8a9d5cd6d17ec02fb2af2e343a2ccb43a9",
+      "release_sha256": "afff7e0eb6f0dfb2b4c52a37b3d5ab8a9d5cd6d17ec02fb2af2e343a2ccb43a9",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/state_processor/base/__init__.py",
+      "source_sha256": "6de86008d4b20aa2e909b2f888f612342c19f8d0df7aeeaa5b49f0f8cb7b3e31",
+      "release_sha256": "6de86008d4b20aa2e909b2f888f612342c19f8d0df7aeeaa5b49f0f8cb7b3e31",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/state_processor/base/basic_state_processor.py",
+      "source_sha256": "f3196b27a4d8bde07ba33f8a373055199b3076044f5b9fb2a6205de0be6924b1",
+      "release_sha256": "f3196b27a4d8bde07ba33f8a373055199b3076044f5b9fb2a6205de0be6924b1",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/state_processor/booster/__init__.py",
+      "source_sha256": "130163e830f0054e429d8c98093b157581538ff3918f5acf3056f797564cd062",
+      "release_sha256": "130163e830f0054e429d8c98093b157581538ff3918f5acf3056f797564cd062",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/booster/state_processor/booster/booster_state_processor.py",
+      "source_sha256": "bd8d99909c523eae0ea3a121aabd827f402383a1e28d6971d460880605983995",
+      "release_sha256": "bd8d99909c523eae0ea3a121aabd827f402383a1e28d6971d460880605983995",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/interface_wrapper.py",
+      "source_sha256": "a1acf47e4895a4729a49e79d85cebad01e41035fb525e4de0dab6ef5785ae502",
+      "release_sha256": "a1acf47e4895a4729a49e79d85cebad01e41035fb525e4de0dab6ef5785ae502",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/unitree/unitree_interface.py",
+      "source_sha256": "5cf4c9ed5bea56625e996c1db96feff6b2dda0062755f4c3498c094c1322b202",
+      "release_sha256": "5cf4c9ed5bea56625e996c1db96feff6b2dda0062755f4c3498c094c1322b202",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/sdk/zmq_interface_wrapper.py",
+      "source_sha256": "b158d1e247099d2af9945d4d9db1e7f269c576fd7ddacdf76895f3e07f8cd9bc",
+      "release_sha256": "b158d1e247099d2af9945d4d9db1e7f269c576fd7ddacdf76895f3e07f8cd9bc",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/clock.py",
+      "source_sha256": "0a1da984595e0da9bd3e3a14a628907a7a0f25d89a580723ace64a583f683134",
+      "release_sha256": "0a1da984595e0da9bd3e3a14a628907a7a0f25d89a580723ace64a583f683134",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/latency.py",
+      "source_sha256": "4ed97af9bb1470ecc3d9880cc3f3f107c0136a09fc5f6739835d2d42ca99be2c",
+      "release_sha256": "4ed97af9bb1470ecc3d9880cc3f3f107c0136a09fc5f6739835d2d42ca99be2c",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/math/__init__.py",
+      "source_sha256": "bdf5480b79f8ce5af50c7ca9bcfe544a709c167e53474099c4a36327a3ffd9a2",
+      "release_sha256": "bdf5480b79f8ce5af50c7ca9bcfe544a709c167e53474099c4a36327a3ffd9a2",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/math/misc.py",
+      "source_sha256": "8629ed21e7dc204015f0a016f86992af8beb1ce81561b56a6709cc28cb16344b",
+      "release_sha256": "8629ed21e7dc204015f0a016f86992af8beb1ce81561b56a6709cc28cb16344b",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/math/quat.py",
+      "source_sha256": "022897436004bae94c072fc95f2d00a170c1735c4f68a8395b2f3a84f1bc6ffb",
+      "release_sha256": "022897436004bae94c072fc95f2d00a170c1735c4f68a8395b2f3a84f1bc6ffb",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/misc.py",
+      "source_sha256": "76992083e4c2d8400197868b1acfd62cd9c8320e574dbcf00efc719a32016bc9",
+      "release_sha256": "76992083e4c2d8400197868b1acfd62cd9c8320e574dbcf00efc719a32016bc9",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/rate.py",
+      "source_sha256": "90ea06cfa765b50c008177cc7853118e6a044f669122806508bdcc4838dcf750",
+      "release_sha256": "90ea06cfa765b50c008177cc7853118e6a044f669122806508bdcc4838dcf750",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/sim_control.py",
+      "source_sha256": "7a9b260eca6ff6ea052169516114672117e2b5d8e715193165733ba27c9d1fa8",
+      "release_sha256": "7a9b260eca6ff6ea052169516114672117e2b5d8e715193165733ba27c9d1fa8",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/sim_state.py",
+      "source_sha256": "9e8f17aecb11c5dd59a3c64bfec4d3e566da049e097dee34c8442cc13df724a2",
+      "release_sha256": "9e8f17aecb11c5dd59a3c64bfec4d3e566da049e097dee34c8442cc13df724a2",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/tests/test_clock.py",
+      "source_sha256": "988c569044c20d6e5f1ea58d653b4890cbc2856d9878a83a20c0c0b1be00585d",
+      "release_sha256": "988c569044c20d6e5f1ea58d653b4890cbc2856d9878a83a20c0c0b1be00585d",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/tests/test_latency.py",
+      "source_sha256": "6ccd89ebd59610fee3c546961613e8bb5bfbfceb44715e1b6d2335dfa9585d91",
+      "release_sha256": "6ccd89ebd59610fee3c546961613e8bb5bfbfceb44715e1b6d2335dfa9585d91",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/holosoma_inference/utils/wandb.py",
+      "source_sha256": "bf02a6d8e5a0bcbab1484eea1bb2e9d16a28760430782448fa9c83356b31e28c",
+      "release_sha256": "bf02a6d8e5a0bcbab1484eea1bb2e9d16a28760430782448fa9c83356b31e28c",
+      "unchanged": true
+    },
+    {
+      "path": "src/holosoma_inference/setup.py",
+      "source_sha256": "2990405debecc63c534d7a22eea43fbdcc5c40891a481b91853fbd2be1310476",
+      "release_sha256": "8e3249c942773fa9706e241049aaeb648fa36b23110bc235115b7331633de58d",
+      "unchanged": false
+    },
+    {
+      "path": "tests/unit/test_deployment_audit.py",
+      "source_sha256": "05dc7b89e4f220c2bcc940a5aceb2a33824c3c21a5b48d477823b3f393d4cdc9",
+      "release_sha256": "05dc7b89e4f220c2bcc940a5aceb2a33824c3c21a5b48d477823b3f393d4cdc9",
+      "unchanged": true
+    },
+    {
+      "path": "tests/unit/test_deployment_audit_policy.py",
+      "source_sha256": "9120a5b2d160edb7636d5b7f2c37f125525b9407835574ddec0552b52a4922ae",
+      "release_sha256": "9120a5b2d160edb7636d5b7f2c37f125525b9407835574ddec0552b52a4922ae",
+      "unchanged": true
+    }
+  ],
+  "submodules": [
+    {
+      "path": "third_party/Fast-FoundationStereo",
+      "url": "https://github.com/NVlabs/Fast-FoundationStereo.git",
+      "commit": "476f4249561f7c79ca707326954f9255643412a6"
+    }
+  ]
+}
