@@ -1,0 +1,5 @@
+# Isaac Sim 5.1 pins older versions of these two pure-Python libraries.
+# HoloSoma's Tyro requires typing-extensions>=4.13; Viser requires websockets>=13.1.
+# Keep these explicit and validate the exact exceptions in check_environment.py.
+typing-extensions==4.15.0
+websockets==16.0

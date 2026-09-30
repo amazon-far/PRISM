@@ -1,0 +1,2 @@
+# flatdict 4.0.1 still imports pkg_resources while building.
+setuptools<81

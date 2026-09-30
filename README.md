@@ -38,17 +38,32 @@ git submodule update --init --recursive
 
 ## Simulation setup
 
-Use Python 3.11, PyTorch 2.7.0, Isaac Sim 5.1.0, IsaacLab 0.47.2 and NumPy 1.26.0.
+Use **Linux x86_64 (Ubuntu 22.04/24.04), Python 3.11** and an NVIDIA driver
+supporting CUDA 12.8 and Isaac Sim 5.1. Install the system packages `git`,
+`build-essential`, `python3.11-venv`, `python3.11-dev`, `libgl1`, `libglib2.0-0`,
+`libglu1-mesa` and `libxrender1`. Python 3.11 may need to be installed separately
+on your distribution; venv, Conda and uv environments are supported.
 
 Clone the simulation branch, then run the commands from the repository root:
 
 ```bash
 git clone --branch main https://github.com/amazon-far/PRISM.git
 cd PRISM
-pip install -r requirements.txt
+python3.11 -m venv .venv
+source .venv/bin/activate
+bash install.sh
 ```
 
-The HoloSoma runtime is pinned in [`requirements.txt`](requirements.txt) for reproducibility.
+The installer downloads PyTorch 2.7.0 (CUDA 12.8), Isaac Sim 5.1.0, a fixed
+Isaac Lab revision (package version 0.47.2), and the HoloSoma revision in
+[`requirements.txt`](requirements.txt). It uses the active environment and
+does not require an existing HoloSoma checkout, Conda environment name or local CUDA toolkit.
+Keep this environment separate from `sim2real`; do not use `--system-site-packages`.
+
+Run `python scripts/check_environment.py` to verify the installation, or add
+`--simulator` for ten headless steps on one GPU (no training or W&B run).
+See [installation details](docs/installation.md) for the two explicit vendor
+dependency overrides and the supported hardware requirements.
 
 **Dataset: under review.** Training requires prepared motion banks, object assets,
 contact sidecars and rank shards. The G1 robot model is included in HoloSoma.

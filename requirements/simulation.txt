@@ -1,0 +1,10 @@
+-r ../requirements.txt
+-c simulation-constraints.txt
+isaacsim[all,extscache]==5.1.0
+torch==2.7.0
+torchvision==0.22.0
+torchaudio==2.7.0
+# Imported by the deployment adapters and the simulator smoke check.
+pin==2.7.0
+# Isaac Lab's recorder manager imports HDF5 even when recording is disabled.
+h5py==3.14.0
