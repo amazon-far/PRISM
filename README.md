@@ -1,5 +1,3 @@
-<p align="center"><strong>This release is currently agent organized. Stay tuned for the final verified version.</strong></p>
-
 <h1 align="center">
   Counterfactual Video Generation Enables Scalable Humanoid Loco-Manipulation
 </h1>
@@ -20,6 +18,8 @@
 <p align="center">
   This repository provides simulation training and real-robot deployment for PRISM, based on <a href="https://github.com/amazon-far/holosoma">HoloSoma</a>.
 </p>
+
+<p align="center"><strong>This release is currently agent organized. Stay tuned for the final verified version.</strong></p>
 
 ## Code branches
 
