@@ -4,10 +4,12 @@ Deploy the student policy with **D435i stereo IR → FastFoundationStereo (FFS) 
 The robot streams stereo images; an external GPU computer runs FFS and the policy.
 Training and released checkpoints are on [`main`](https://github.com/amazon-far/PRISM/tree/main).
 
-**Training uses a 37° neck/camera pitch. Match this mounting angle: 47° points
-10° further down and changes the depth view seen by the policy.**
+**The canonical G1 mounting has a default downward camera pitch of 47°.
+Training uses 37°: tilt the head back / up by 10° from the canonical position
+before deployment.** This physical adjustment aligns the camera pitch with the
+depth view used during training. Angles are measured below the torso-forward horizontal.
 
-![Neck/camera pitch: trained at 37 degrees, compared with 47 degrees](docs/images/neck_pitch_37_vs_47.svg)
+![Local G1 mesh: canonical 47-degree default; tilt the head back and up by 10 degrees to match the trained 37-degree camera pitch](docs/images/neck_pitch_37_vs_47.png)
 
 ## Install
 
