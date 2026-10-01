@@ -21,6 +21,7 @@ checkpoints/
 *.pt
 *.pth
 *.onnx
+!_ckpts/student_28000.onnx
 *.mp4
 *.avi
 *.log

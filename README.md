@@ -41,14 +41,18 @@ from the GPU computer to this host.
 
 ## Run
 
-Prepare the student **ONNX** policy and the
+The released **student 28K ONNX** is included at
+[`_ckpts/student_28000.onnx`](_ckpts/student_28000.onnx), matching the student
+checkpoint on `main` and the **37° camera mounting** shown above.
+Its checksum and model interface are recorded in [`_ckpts/manifest.json`](_ckpts/manifest.json).
+Download the
 [C-Fast-FoundationStereo weights](https://huggingface.co/nvidia/c-fast-foundationstereo/tree/9b446878c81ddb27593036767b29b2859d46103e).
 Keep `model_best_bp2_serialize.pth` and `cfg.yaml` in the same directory.
 Then run on the GPU computer:
 
 ```bash
 bash real_ffs.sh \
-  --model /path/to/student.onnx \
+  --model _ckpts/student_28000.onnx \
   --ffs-model /path/to/ffs/model_best_bp2_serialize.pth \
   --relay-host user@camera-host \
   --relay-python /absolute/path/to/camera-env/bin/python \

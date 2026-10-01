@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "checkpoints": [
+    {
+      "file": "student_28000.onnx",
+      "role": "student",
+      "checkpoint_step": 28000,
+      "completed_iteration": 27999,
+      "sha256": "91c18e31c63504fd97c085a59292a6b9c0679d0ccea7dd4f405401b8d237a71b",
+      "size_bytes": 1200104,
+      "pytorch_checkpoint": {
+        "branch": "main",
+        "file": "_ckpts/student_28000.pt",
+        "sha256": "f1af6010f0d31166ce535fafadbe8b8409c56e4075a3f9da5783b4e6e81d1715"
+      },
+      "inputs": {
+        "actor_obs": [
+          "batch",
+          94
+        ],
+        "perception_obs": [
+          "batch",
+          5046
+        ]
+      },
+      "outputs": {
+        "action": [
+          "batch",
+          29
+        ]
+      },
+      "camera_pitch_deg": 37,
+      "deployment_preset": "g1-root_pos-contact-aware-drop-button-actions-no-linvel-h1",
+      "external_commands": "Provided by the sim2real joystick/manual-command adapter."
+    }
+  ]
+}
