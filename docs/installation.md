@@ -9,6 +9,12 @@ bank and object meshes. Changing the GPU count changes the global batch and
 requires matching motion shards.
 The software is not tied to a hostname, username, mount point or network interface.
 
+On Ubuntu 22.04/24.04, install `git`, `build-essential`, `python3.11-venv`,
+`python3.11-dev`, `libgl1`, `libglib2.0-0`, `libglu1-mesa` and `libxrender1`.
+Python 3.11 may need to be installed separately on your distribution.
+Keep the simulation environment separate from `sim2real`; do not use
+`--system-site-packages`.
+
 Create a fresh environment and run `bash install.sh` from the repository.
 The installer uses `python3` from that environment; set `PRISM_PYTHON` to use
 another interpreter. The CUDA libraries are installed as Python wheels;
