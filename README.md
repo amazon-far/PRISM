@@ -21,11 +21,20 @@
 
 <p align="center"><strong>This release is currently agent organized. Stay tuned for the final verified version.</strong></p>
 
-## Branches
+## Code branches
 
-Use [`main`](https://github.com/amazon-far/PRISM/tree/main) for simulation training
-and [`sim2real`](https://github.com/amazon-far/PRISM/tree/sim2real) for real-robot
-deployment with FastFoundationStereo.
+| Branch | Use |
+|---|---|
+| [`main`](https://github.com/amazon-far/PRISM/tree/main) | Simulation: teacher training, rollout collection and student distillation |
+| [`sim2real`](https://github.com/amazon-far/PRISM/tree/sim2real) | Real-robot deployment with FastFoundationStereo |
+
+For real-robot deployment, switch an existing clone to `sim2real` and follow that branch's README:
+
+```bash
+git fetch origin
+git switch sim2real
+git submodule update --init --recursive
+```
 
 ## Installation
 
@@ -42,24 +51,25 @@ bash install.sh
 
 ## Data
 
-The dataset is available on [Hugging Face](https://huggingface.co/datasets/Amazon-FAR/far-prism-data).
-See [download, extraction and preparation](docs/data.md) to place it under `data/`.
-The documented dataset snapshot still needs the object meshes before training.
+Download and extract the [Hugging Face dataset](https://huggingface.co/datasets/Amazon-FAR/far-prism-data) into `data/`:
+
+```bash
+bash download_data.sh
+```
+
+Add the required object meshes and [prepare training shards](docs/data.md) before training.
 
 ## Teacher Training
 
-Train the teacher with [`train_teacher.sh`](train_teacher.sh).
-See [teacher training instructions](docs/training.md#teacher).
+Train a [privileged motion-tracking policy](docs/training.md#teacher) with PPO using [`train_teacher.sh`](train_teacher.sh).
 
 ## Rollout
 
-Collect teacher trajectories with [`rollout.sh`](rollout.sh).
-See [rollout instructions](docs/training.md#rollout).
+Collect [teacher trajectories and contact sidecars](docs/training.md#rollout) using [`rollout.sh`](rollout.sh).
 
 ## Student Distillation
 
-Train the student with [`train_student.sh`](train_student.sh).
-See [distillation instructions](docs/training.md#student).
+Distill the teacher into a [depth policy](docs/training.md#student) using [`train_student.sh`](train_student.sh).
 
 ## Citation
 

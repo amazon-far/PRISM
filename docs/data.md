@@ -7,20 +7,18 @@ matching contact sidecars, G1 assets and reference-replay videos. This is a
 filtered subset of the original 137 trajectories; the raw-video, reconstruction
 and teacher-training sections are still under review.
 
-After [installation](../README.md#installation), from the repository root, download the single **317 MB** archive to avoid
-thousands of individual requests. These commands pin the dataset revision and
-verify both the archive and its extracted files (requires `curl`):
+Run the download script from the repository root (requires `curl` and standard
+Linux utilities). It downloads the single **317 MB** archive, checks its SHA256,
+extracts it and verifies every file:
 
 ```bash
-mkdir -p data
-curl -fL --retry 3 \
-  https://huggingface.co/datasets/Amazon-FAR/far-prism-data/resolve/2498b1dbfda63a8000d28aa1b5d504cf9ff6b21b/far-prism-data.tar.gz \
-  -o data/far-prism-data.tar.gz && \
-  (cd data && \
-   echo 'eb1fbcd2ef2714218292f9faf98e6cf57ac7f792da0becf89b3ca89d65850f5d  far-prism-data.tar.gz' | sha256sum --check && \
-   tar -xzf far-prism-data.tar.gz && \
-   cd far-prism-data && sha256sum --check SHA256SUMS --quiet)
+bash download_data.sh
 ```
+
+The script pins dataset revision `2498b1dbfda63a8000d28aa1b5d504cf9ff6b21b`.
+Pass an output directory as the first argument to use another location;
+rerunning reuses the verified archive and checks the existing dataset without
+overwriting it. The commands below use the default repository `data/` directory.
 
 The extracted training inputs are:
 
