@@ -52,13 +52,14 @@ wandb login
 
 ## Data
 
-Download and extract the [Hugging Face dataset](https://huggingface.co/datasets/Amazon-FAR/far-prism-data) into `data/`:
+Download and prepare the [Hugging Face dataset](https://huggingface.co/datasets/Amazon-FAR/far-prism-data) under `data/`:
 
 ```bash
 bash download_data.sh
 ```
 
-Add the required object meshes and [prepare training shards](docs/data.md) before training.
+Object meshes are pending release; setup currently stops at the asset check.
+[Dataset status](docs/data.md).
 
 ## Teacher Training
 

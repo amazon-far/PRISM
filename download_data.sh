@@ -4,14 +4,15 @@ set -euo pipefail
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
   echo "Usage: bash download_data.sh [OUTPUT_DIR]"
-  echo "Download, verify and extract the published dataset (default: repository data/)."
+  echo "Download, verify, extract and prepare training shards (default: repository data/)."
   exit 0
 fi
 if (( $# > 1 )) || [[ "${1:-}" == -* ]]; then
   echo "Usage: bash download_data.sh [OUTPUT_DIR]" >&2
   exit 2
 fi
-for tool in curl tar sha256sum cmp flock; do
+python_bin="${PYTHON_BIN:-python3}"
+for tool in curl tar sha256sum cmp flock "$python_bin"; do
   command -v "$tool" >/dev/null || { echo "Required command not found: $tool" >&2; exit 1; }
 done
 
@@ -59,5 +60,17 @@ else
   mv -T -- "$extracted" "$dataset_dir"
 fi
 
-echo "Dataset verified: $dataset_dir"
-echo "Add the object meshes and prepare training shards as described in docs/data.md."
+echo "Downloaded files verified. Preparing training shards..."
+motion_bank="$dataset_dir/data/train-student/data/motion_bank"
+shard_root="$data_dir/student_shards_ws8"
+if ! PYTHONDONTWRITEBYTECODE=1 "$python_bin" "$repo_root/scripts/prepare_as_rank_shards.py" \
+    --motion-dir "$motion_bank" \
+    --object-map "$motion_bank/_clip_object_urdf_map.json" \
+    --world-size 8 --environments-per-rank 2048 \
+    --output-root "$shard_root"; then
+  echo "Training data preparation failed; see the error above and docs/data.md." >&2
+  exit 1
+fi
+
+echo "Training data prepared: $dataset_dir"
+echo "Training shards verified: $shard_root"
