@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts import _rollout
 from scripts._rollout import prepare
 from holosoma.simulator.isaacsim.usd_cache import resolve_robot_usd_conversion_dir
 
@@ -52,6 +53,28 @@ def test_existing_output_is_preserved(tmp_path):
     with pytest.raises(SystemExit):
         prepare(argv)
     assert (output / "keep.txt").read_text() == "existing output"
+
+
+def test_short_rollout_command_matches_explicit_defaults_and_preserves_output(tmp_path, monkeypatch):
+    bank, _ = inputs(tmp_path)
+    root = tmp_path / "repository"
+    checkpoint = root / "_ckpts" / "teacher_40000.pt"
+    checkpoint.parent.mkdir(parents=True)
+    checkpoint.touch()
+    monkeypatch.setattr(_rollout, "ROOT", root)
+    monkeypatch.chdir(tmp_path)
+    argv = ["--motion-bank", str(bank), "--check"]
+    short = prepare(argv)
+    output = root / "outputs" / "rollout"
+    explicit = prepare([*argv, "--checkpoint", str(checkpoint), "--output", str(output), "--gpu", "0"])
+    assert short[1:] == explicit[1:]
+    assert not output.exists()
+    output.mkdir(parents=True)
+    marker = output / "keep.txt"
+    marker.write_text("existing output")
+    with pytest.raises(SystemExit):
+        prepare(argv)
+    assert marker.read_text() == "existing output"
 
 
 def test_parallel_rollouts_do_not_share_forced_robot_usd_conversion(tmp_path, monkeypatch):

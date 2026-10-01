@@ -13,18 +13,12 @@ inside the dataset archive. The published motion bank already contains the
 rollout commands, so no new teacher rollout or command generation is needed.
 
 ```bash
-STUDENT_DATA="$PWD/data/far-prism-data/data/train-student/data"
-STUDENT_SHARDS="$PWD/data/student_shards_ws8"
-wandb login
-bash train_student.sh \
-  --motion-bank "$STUDENT_DATA/motion_bank" \
-  --rank-shards "$STUDENT_SHARDS" \
-  --contact-bank "$STUDENT_DATA/contact_sidecars" \
-  --robot-assets "$STUDENT_DATA/robot_assets" \
-  --teacher-checkpoint _ckpts/teacher_40000.pt \
-  --initializer-checkpoint _ckpts/box_23000.pt \
-  --entity YOUR_WANDB_ENTITY
+bash train_student.sh --entity YOUR_WANDB_ENTITY
 ```
+
+The launcher uses the downloaded dataset, the prepared `data/student_shards_ws8/`
+and the released checkpoints automatically. For another dataset, pass
+`--motion-bank`, `--contact-bank`, `--robot-assets` and matching `--rank-shards`.
 
 Replace `YOUR_WANDB_ENTITY` with your W&B user or team. Training uses 2,048
 environments per GPU, runs for 40K iterations and saves PT/ONNX pairs. Use the same
@@ -41,10 +35,8 @@ teacher bank (not yet included in the Hugging Face release). Run on each node
 with `--node-rank` set to 0–3.
 
 ```bash
-bash train_teacher.sh \
-  --motion-bank /path/to/teacher_motion_bank \
-  --entity YOUR_WANDB_ENTITY \
-  --node-rank 0 --master-addr NODE_0_IP
+bash train_teacher.sh --motion-bank /path/to/teacher_bank --entity YOUR_WANDB_ENTITY \
+  --node-rank NODE_RANK --master-addr NODE_0_IP
 ```
 
 For a single-node teacher run, prepare eight rank shards and add
@@ -66,8 +58,8 @@ than the four-node configuration. Training still runs for 40K updates.
 Collect teacher trajectories and contact sidecars. Every clip is retained, including failures.
 
 ```bash
-bash rollout.sh \
-  --checkpoint _ckpts/teacher_40000.pt \
-  --motion-bank /path/to/teacher_motion_bank \
-  --output /path/to/new_rollouts --gpu 0
+bash rollout.sh --motion-bank /path/to/teacher_bank
 ```
+
+Rollouts use the released teacher and write to `outputs/rollout/`.
+Pass `--output` for subsequent collections; existing outputs are never overwritten.

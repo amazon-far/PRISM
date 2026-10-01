@@ -15,6 +15,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+STUDENT_DATA = ROOT / "data" / "far-prism-data" / "data" / "train-student" / "data"
 
 
 def bind_nccl(env):
@@ -44,19 +45,22 @@ def prepare(role, cli_template, environment, nodes, argv=None):
         prog="train_teacher.sh" if role == "teacher" else "train_student.sh",
         description=f"Train {role}: {nodes} node(s), 8 GPUs per node, 2048 environments per GPU."
     )
-    parser.add_argument("--motion-bank", type=Path, required=True,
-                        help="Prepared single-slot motion bank, including its rank shards")
+    parser.add_argument("--motion-bank", type=Path, required=role == "teacher",
+                        help="Prepared single-slot motion bank (student default: downloaded Hugging Face bank)")
     parser.add_argument("--rank-shards", type=Path,
-                        help="Prepared rank-shard directory; required for a new dataset or a single-node teacher")
+                        help="Prepared shards (downloaded student default: data/student_shards_ws8); required for a single-node teacher")
     if role == "teacher":
         parser.add_argument("--nodes", type=int, choices=(1, 4), default=nodes,
                             help="Teacher nodes, each with eight GPUs (default: 4)")
     if role == "distillation":
-        parser.add_argument("--contact-bank", type=Path, required=True)
-        parser.add_argument("--robot-assets", type=Path, required=True)
-        parser.add_argument("--teacher-checkpoint", type=Path, required=True)
-        parser.add_argument("--initializer-checkpoint", type=Path, required=True,
-                            help="Box policy checkpoint for actor initialization")
+        parser.add_argument("--contact-bank", type=Path,
+                            help="Contact sidecars (default: downloaded dataset; required for a custom bank)")
+        parser.add_argument("--robot-assets", type=Path,
+                            help="Robot assets (default: downloaded dataset; required for a custom bank)")
+        parser.add_argument("--teacher-checkpoint", type=Path, default=ROOT / "_ckpts" / "teacher_40000.pt",
+                            help="Distillation teacher (default: _ckpts/teacher_40000.pt)")
+        parser.add_argument("--initializer-checkpoint", type=Path, default=ROOT / "_ckpts" / "box_23000.pt",
+                            help="Actor initialization checkpoint (default: _ckpts/box_23000.pt)")
     parser.add_argument("--entity", default=os.environ.get("WANDB_ENTITY"), required=not os.environ.get("WANDB_ENTITY"))
     parser.add_argument("--project", default="carry")
     parser.add_argument("--name", default=role)
@@ -73,6 +77,15 @@ def prepare(role, cli_template, environment, nodes, argv=None):
     parser.add_argument("--check", action="store_true",
                         help="Parse and print the training command on CPU, without starting training")
     args = parser.parse_args(argv)
+    if role == "distillation":
+        default_bank = STUDENT_DATA / "motion_bank"
+        if args.motion_bank is None or args.motion_bank.expanduser().resolve() == default_bank:
+            args.motion_bank = default_bank
+            args.contact_bank = args.contact_bank or STUDENT_DATA / "contact_sidecars"
+            args.robot_assets = args.robot_assets or STUDENT_DATA / "robot_assets"
+            args.rank_shards = args.rank_shards or ROOT / "data" / "student_shards_ws8"
+        elif args.contact_bank is None or args.robot_assets is None:
+            parser.error("A custom --motion-bank requires --contact-bank and --robot-assets")
     if role == "teacher":
         nodes = args.nodes
         if nodes == 1 and args.rank_shards is None:

@@ -19,10 +19,12 @@ def prepare(argv=None):
         description="Export every clip in a prepared motion bank using the teacher policy. "
                     "Outputs include motion_bank/, clips/ contact sidecars and success/failure summaries.",
     )
-    parser.add_argument("--checkpoint", required=True, type=Path)
+    parser.add_argument("--checkpoint", type=Path, default=ROOT / "_ckpts" / "teacher_40000.pt",
+                        help="Teacher checkpoint (default: _ckpts/teacher_40000.pt)")
     parser.add_argument("--motion-bank", required=True, type=Path,
                         help="Single-slot motion bank or one prepared rank shard, with its object map")
-    parser.add_argument("--output", required=True, type=Path, help="New output directory")
+    parser.add_argument("--output", type=Path, default=ROOT / "outputs" / "rollout",
+                        help="New output directory (default: outputs/rollout)")
     parser.add_argument("--gpu", default="0", help="One GPU index or UUID")
     parser.add_argument("--check", action="store_true", help="Validate checkpoint/config on CPU without rollout")
     args = parser.parse_args(argv)

@@ -47,6 +47,7 @@ cd PRISM
 python3.11 -m venv .venv
 source .venv/bin/activate
 bash install.sh
+wandb login
 ```
 
 ## Data
@@ -61,15 +62,30 @@ Add the required object meshes and [prepare training shards](docs/data.md) befor
 
 ## Teacher Training
 
-Train a [privileged motion-tracking policy](docs/training.md#teacher) with PPO using [`train_teacher.sh`](train_teacher.sh).
+Train a privileged motion-tracking policy with PPO. Run on each node with
+`NODE_RANK` set to 0–3 and `NODE_0_IP` set to the first node's address.
+Teacher-training data is still under review; supply a prepared teacher bank.
+
+```bash
+bash train_teacher.sh --motion-bank /path/to/teacher_bank --entity YOUR_WANDB_ENTITY \
+  --node-rank NODE_RANK --master-addr NODE_0_IP
+```
 
 ## Rollout
 
-Collect [teacher trajectories and contact sidecars](docs/training.md#rollout) using [`rollout.sh`](rollout.sh).
+Collect teacher trajectories and contact sidecars into `outputs/rollout/`.
+
+```bash
+bash rollout.sh --motion-bank /path/to/teacher_bank
+```
 
 ## Student Distillation
 
-Distill the teacher into a [depth policy](docs/training.md#student) using [`train_student.sh`](train_student.sh).
+Distill the teacher into a depth policy using the prepared data under `data/`.
+
+```bash
+bash train_student.sh --entity YOUR_WANDB_ENTITY
+```
 
 ## Citation
 

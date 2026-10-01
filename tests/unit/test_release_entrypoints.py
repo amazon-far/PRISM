@@ -6,7 +6,7 @@ import pytest
 
 from scripts._teacher import CLI, ENVIRONMENT
 from scripts._student import CLI as STUDENT_CLI, ENVIRONMENT as STUDENT_ENVIRONMENT
-from scripts._training import bind_rank_shards, prepare
+from scripts._training import ROOT, STUDENT_DATA, bind_rank_shards, prepare
 from scripts.prepare_as_rank_shards import prepare_rank_shards
 
 
@@ -91,6 +91,34 @@ def test_student_accepts_new_dataset_shards_without_historical_identity(tmp_path
                 "HOLOSOMA_EXTERNAL_AS_SINGLE_SLOT_VIEW_DIGEST"):
         assert key not in env
     assert not shards.exists()
+
+
+def test_short_student_command_matches_explicit_recipe_outside_repository(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    short = prepare("distillation", STUDENT_CLI, STUDENT_ENVIRONMENT, 1,
+                    ["--entity", "test", "--check"])
+    explicit = prepare("distillation", STUDENT_CLI, STUDENT_ENVIRONMENT, 1, [
+        "--motion-bank", str(STUDENT_DATA / "motion_bank"),
+        "--contact-bank", str(STUDENT_DATA / "contact_sidecars"),
+        "--robot-assets", str(STUDENT_DATA / "robot_assets"),
+        "--rank-shards", str(ROOT / "data" / "student_shards_ws8"),
+        "--teacher-checkpoint", str(ROOT / "_ckpts" / "teacher_40000.pt"),
+        "--initializer-checkpoint", str(ROOT / "_ckpts" / "box_23000.pt"),
+        "--entity", "test", "--check",
+    ])
+    # The complete effective CLI, environment and distributed command agree.
+    assert short[1:] == explicit[1:]
+    assert short[0].rank_shards == ROOT / "data" / "student_shards_ws8"
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize("extra", [[], ["--contact-bank", "/custom/contacts"],
+                                  ["--robot-assets", "/custom/robot"]])
+def test_custom_student_bank_cannot_implicitly_mix_with_downloaded_assets(extra):
+    with pytest.raises(SystemExit):
+        prepare("distillation", STUDENT_CLI, STUDENT_ENVIRONMENT, 1, [
+            "--motion-bank", "/custom/motions", "--entity", "test", "--check", *extra,
+        ])
 
 
 def test_shard_binding_validates_source_and_topology(tmp_path):
