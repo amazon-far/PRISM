@@ -5,7 +5,8 @@ from types import SimpleNamespace
 import pytest
 
 from scripts._teacher import CLI, ENVIRONMENT
-from scripts._training import bind_teacher_shards, prepare
+from scripts._student import CLI as STUDENT_CLI, ENVIRONMENT as STUDENT_ENVIRONMENT
+from scripts._training import bind_rank_shards, prepare
 from scripts.prepare_as_rank_shards import prepare_rank_shards
 
 
@@ -71,7 +72,28 @@ def test_default_teacher_preserves_four_node_recipe():
     assert env["HOLOSOMA_MOTION_SHARD_MANIFEST"].endswith("/ws32/manifest.json")
 
 
-def test_teacher_shard_binding_validates_source_and_topology(tmp_path):
+def test_student_accepts_new_dataset_shards_without_historical_identity(tmp_path):
+    shards = tmp_path / "student shards"
+    _, _, cli, env, command = prepare("distillation", STUDENT_CLI, STUDENT_ENVIRONMENT, 1, [
+        "--motion-bank", "/external/motions", "--contact-bank", "/external/contacts",
+        "--robot-assets", "/external/robot", "--teacher-checkpoint", "/teacher.pt",
+        "--initializer-checkpoint", "/box.pt", "--rank-shards", str(shards),
+        "--entity", "test", "--check",
+    ])
+    assert "--nnodes=1" in command and "--training.num-envs=16384" in cli
+    assert "--training.export-onnx=True" in cli
+    assert "--algo.config.distill.strict-teacher-load=True" in cli
+    assert "--command.setup-terms.motion-command.params.motion-config.contact-aware-button-window-mode=peak_height" in cli
+    assert env["HOLOSOMA_MOTION_SHARD_MANIFEST"] == str(shards / "manifest.json")
+    assert env["HOLOSOMA_RANK_LOCAL_MOTION_ROOT"] == str(shards)
+    for key in ("HOLOSOMA_EXTERNAL_AS_RANK_SHARD_SOURCE_DIGEST",
+                "HOLOSOMA_EXTERNAL_AS_SINGLE_SLOT_SOURCE_DIGEST",
+                "HOLOSOMA_EXTERNAL_AS_SINGLE_SLOT_VIEW_DIGEST"):
+        assert key not in env
+    assert not shards.exists()
+
+
+def test_shard_binding_validates_source_and_topology(tmp_path):
     bank = tmp_path / "bank"
     bank.mkdir()
     (bank / "object.obj").write_text("v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n")
@@ -89,14 +111,14 @@ def test_teacher_shard_binding_validates_source_and_topology(tmp_path):
                                     output_root=shards, world_size=8, environments_per_rank=2048)
     env = {}
     args = SimpleNamespace(nodes=1, rank_shards=shards)
-    bound = bind_teacher_shards(args, {"MOTION_BANK": str(bank)}, env)
+    bound = bind_rank_shards(args, {"MOTION_BANK": str(bank)}, env, world_size=8)
     assert bound["clip_count"] == 9
     assert env["HOLOSOMA_EXTERNAL_AS_RANK_SHARD_SOURCE_DIGEST"] == published["source_digest"]
     assert set(bound["clip_cover_counts"].values()) == {1}
     with pytest.raises((ValueError, RuntimeError)):
-        bind_teacher_shards(SimpleNamespace(nodes=4, rank_shards=shards), {"MOTION_BANK": str(bank)}, {})
+        bind_rank_shards(args, {"MOTION_BANK": str(bank)}, {}, world_size=32)
     (bank / "clip_0.npz").write_bytes(b"changed motion payload")
     rejected_env = {}
     with pytest.raises((ValueError, RuntimeError)):
-        bind_teacher_shards(args, {"MOTION_BANK": str(bank)}, rejected_env)
+        bind_rank_shards(args, {"MOTION_BANK": str(bank)}, rejected_env, world_size=8)
     assert "HOLOSOMA_EXTERNAL_AS_RANK_SHARD_SOURCE_DIGEST" not in rejected_env

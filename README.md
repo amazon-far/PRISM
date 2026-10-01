@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://arxiv.org/abs/2609.38172"><img src="https://img.shields.io/badge/arXiv-2609.38172-b31b1b.svg" alt="arXiv"></a>
   <a href="https://prism-real2sim2real.github.io/"><img src="https://img.shields.io/badge/Project-Page-blue.svg" alt="Project Page"></a>
-  <img src="https://img.shields.io/badge/Dataset-under%20review-orange.svg" alt="Dataset: under review">
+  <a href="https://huggingface.co/datasets/Amazon-FAR/far-prism-data"><img src="https://img.shields.io/badge/Dataset-Hugging%20Face-yellow.svg" alt="Dataset on Hugging Face"></a>
 </p>
 
 <p align="center">
@@ -65,12 +65,68 @@ Run `python scripts/check_environment.py` to verify the installation, or add
 See [installation details](docs/installation.md) for the two explicit vendor
 dependency overrides and the supported hardware requirements.
 
-**Dataset: under review.** Training requires prepared motion banks, object assets,
-contact sidecars and rank shards. The G1 robot model is included in HoloSoma.
+## Dataset
+
+Download [Amazon-FAR/far-prism-data](https://huggingface.co/datasets/Amazon-FAR/far-prism-data)
+from Hugging Face. The current release contains **129 successful teacher-rollout
+trajectories** (35 box, 32 bin, 34 barrel, 28 ball), precomputed policy commands,
+matching contact sidecars, G1 assets and reference-replay videos. This is a
+filtered subset of the original 137 trajectories; the raw-video, reconstruction
+and teacher-training sections are still under review.
+
+From the repository root, download the single **317 MB** archive to avoid
+thousands of individual requests. These commands pin the dataset revision and
+verify both the archive and its extracted files (requires `curl`):
+
+```bash
+mkdir -p data
+curl -fL --retry 3 \
+  https://huggingface.co/datasets/Amazon-FAR/far-prism-data/resolve/2498b1dbfda63a8000d28aa1b5d504cf9ff6b21b/far-prism-data.tar.gz \
+  -o data/far-prism-data.tar.gz && \
+  (cd data && \
+   echo 'eb1fbcd2ef2714218292f9faf98e6cf57ac7f792da0becf89b3ca89d65850f5d  far-prism-data.tar.gz' | sha256sum --check && \
+   tar -xzf far-prism-data.tar.gz && \
+   cd far-prism-data && sha256sum --check SHA256SUMS --quiet)
+```
+
+The extracted training inputs are:
+
+```text
+data/far-prism-data/
+  clips.csv                                # Per-clip index
+  data/train-student/data/motion_bank/      # Motion NPZs, commands and object map
+  data/train-student/data/contact_sidecars/ # Matching contact intervals and points
+  data/train-student/data/robot_assets/     # G1 URDF and depth-rendering meshes
+  data/train-student/vis/                   # Reference replays
+```
+
+**Current asset dependency:** this dataset revision does not include the object
+visual/collision meshes referenced by its URDFs under `data/recon-hoi/`.
+Those exact assets must be supplied before preparing shards or starting
+distillation. The preparation command below checks these dependencies and stops
+if any are missing; downloading the archive alone is not yet sufficient to train.
+
+Once those assets are present, prepare eight rank shards locally. Keep the
+extracted directory layout intact so relative object paths resolve correctly:
+
+```bash
+STUDENT_DATA="$PWD/data/far-prism-data/data/train-student/data"
+STUDENT_SHARDS="$PWD/data/student_shards_ws8"
+python scripts/prepare_as_rank_shards.py \
+  --motion-dir "$STUDENT_DATA/motion_bank" \
+  --object-map "$STUDENT_DATA/motion_bank/_clip_object_urdf_map.json" \
+  --world-size 8 --environments-per-rank 2048 \
+  --output-root "$STUDENT_SHARDS"
+```
+
+The shards cover all 129 published clips. Follow the student command below to
+use them. The dataset and generated shards remain local under Git-ignored `data/`.
 
 ## Train
 
-**Teacher:** PPO from scratch, 4 nodes × 8 GPUs. Run on each node with `--node-rank` set to 0–3.
+**Teacher:** PPO from scratch, 4 nodes × 8 GPUs. This requires a separate prepared
+teacher bank (not yet included in the Hugging Face release). Run on each node
+with `--node-rank` set to 0–3.
 
 ```bash
 bash train_teacher.sh \
@@ -102,19 +158,35 @@ bash rollout.sh \
   --output /path/to/new_rollouts --gpu 0
 ```
 
-**Student:** online distillation with PPO, 1 node × 8 GPUs. Initialize the actor from box 23K. Use the prepared rollout command bank and matching contacts; raw rollout output requires command-bank and shard preparation using `scripts/`.
+**Student:** online distillation with PPO, **1 node × 8 GPUs**. After the dataset
+and shard preparation above, use the released teacher 40K and box 23K actor
+initializer from this code repository's `_ckpts/` directory. These are the
+checkpoint files validated by the launcher; do not substitute the older copies
+inside the dataset archive. The published motion bank already contains the
+rollout commands, so no new teacher rollout or command generation is needed.
 
 ```bash
+STUDENT_DATA="$PWD/data/far-prism-data/data/train-student/data"
+STUDENT_SHARDS="$PWD/data/student_shards_ws8"
+wandb login
 bash train_student.sh \
-  --motion-bank /path/to/student_motion_bank \
-  --contact-bank /path/to/contact_sidecars \
-  --robot-assets /path/to/box23k_robot_assets \
+  --motion-bank "$STUDENT_DATA/motion_bank" \
+  --rank-shards "$STUDENT_SHARDS" \
+  --contact-bank "$STUDENT_DATA/contact_sidecars" \
+  --robot-assets "$STUDENT_DATA/robot_assets" \
   --teacher-checkpoint _ckpts/teacher_40000.pt \
   --initializer-checkpoint _ckpts/box_23000.pt \
-  --entity YOUR_WANDB_ENTITY --name student
+  --entity YOUR_WANDB_ENTITY --name student \
+  --output outputs/student
 ```
 
-Both stages use 2,048 environments per GPU, run for 40K iterations and save PT/ONNX pairs. Use the same clean PRISM revision and installed HoloSoma revision on every node. The launchers detect these revisions and fetch/verify runtime source automatically. Use a new `--output` for each run; append `--check` for a CPU CLI check or `--help` for options.
+Replace `YOUR_WANDB_ENTITY` with your W&B user or team. Both stages use 2,048
+environments per GPU, run for 40K iterations and save PT/ONNX pairs. Use the same
+clean PRISM revision and installed HoloSoma revision on every node. The launchers
+detect these revisions and fetch/verify runtime source automatically. Use a new
+`--output` for each run; append `--check` for a CPU CLI check or `--help` for options.
+`--check` only validates the command syntax; it does not validate assets or run
+the simulator.
 
 ## Checkpoints
 
@@ -126,7 +198,9 @@ Both stages use 2,048 environments per GPU, run for 40K iterations and save PT/O
 
 The checkpoints include model weights and runtime configuration, without optimizer or training-session state. Use them for inference or actor initialization. File checksums are in [`_ckpts/manifest.json`](_ckpts/manifest.json).
 
-New training uses `peak_height` button labels; released policies retain their trained command semantics. Supply motion banks, contact sidecars and object assets separately.
+New training uses `peak_height` button labels; released policies retain their
+trained command semantics. See [Dataset](#dataset) for the training inputs and
+current asset availability.
 
 See [LICENSE](LICENSE), [NOTICE](NOTICE) and [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES) for attribution and terms.
 

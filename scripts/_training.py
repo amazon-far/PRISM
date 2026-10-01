@@ -46,11 +46,11 @@ def prepare(role, cli_template, environment, nodes, argv=None):
     )
     parser.add_argument("--motion-bank", type=Path, required=True,
                         help="Prepared single-slot motion bank, including its rank shards")
+    parser.add_argument("--rank-shards", type=Path,
+                        help="Prepared rank-shard directory; required for a new dataset or a single-node teacher")
     if role == "teacher":
         parser.add_argument("--nodes", type=int, choices=(1, 4), default=nodes,
                             help="Teacher nodes, each with eight GPUs (default: 4)")
-        parser.add_argument("--rank-shards", type=Path,
-                            help="Prepared rank-shard directory; required with --nodes 1")
     if role == "distillation":
         parser.add_argument("--contact-bank", type=Path, required=True)
         parser.add_argument("--robot-assets", type=Path, required=True)
@@ -118,12 +118,16 @@ def prepare(role, cli_template, environment, nodes, argv=None):
             env.update({"HOLOSOMA_GLOO_GRAD_REDUCE": "1",
                         "HOLOSOMA_HIERARCHICAL_GRAD_REDUCE": "0",
                         "HOLOSOMA_HIERARCHICAL_GRAD_REDUCE_CPU_LEADER": "0"})
-        if args.rank_shards is not None:
-            shard_root = args.rank_shards.expanduser().absolute()
-            env["HOLOSOMA_RANK_LOCAL_MOTION_ROOT"] = str(shard_root)
-            env["HOLOSOMA_MOTION_SHARD_MANIFEST"] = str(shard_root / "manifest.json")
-            # Bind this only after validating the complete published tree.
-            env.pop("HOLOSOMA_EXTERNAL_AS_RANK_SHARD_SOURCE_DIGEST", None)
+    if args.rank_shards is not None:
+        shard_root = args.rank_shards.expanduser().absolute()
+        env["HOLOSOMA_RANK_LOCAL_MOTION_ROOT"] = str(shard_root)
+        env["HOLOSOMA_MOTION_SHARD_MANIFEST"] = str(shard_root / "manifest.json")
+        # Bind the new bank only after validating its complete published tree.
+        # Historical view identities do not describe a newly prepared subset.
+        for key in ("HOLOSOMA_EXTERNAL_AS_RANK_SHARD_SOURCE_DIGEST",
+                    "HOLOSOMA_EXTERNAL_AS_SINGLE_SLOT_SOURCE_DIGEST",
+                    "HOLOSOMA_EXTERNAL_AS_SINGLE_SLOT_VIEW_DIGEST"):
+            env.pop(key, None)
     env.update({
         "PYTHONPATH": str(ROOT),
         "CUDA_VISIBLE_DEVICES": os.environ.get("CUDA_VISIBLE_DEVICES", "0,1,2,3,4,5,6,7"),
@@ -143,7 +147,7 @@ def prepare(role, cli_template, environment, nodes, argv=None):
     return args, bindings, cli, env, command
 
 
-def bind_teacher_shards(args, bindings, env):
+def bind_rank_shards(args, bindings, env, *, world_size):
     """Validate explicit shards against their source before binding their identity."""
     from scripts.prepare_as_rank_shards import validate_published_rank_shards
 
@@ -151,7 +155,7 @@ def bind_teacher_shards(args, bindings, env):
         motion_dir=Path(bindings["MOTION_BANK"]),
         object_map=Path(bindings["MOTION_BANK"]) / "_clip_object_urdf_map.json",
         output_root=args.rank_shards.expanduser().absolute(),
-        world_size=args.nodes * 8,
+        world_size=world_size,
         environments_per_rank=2048,
     )
     env["HOLOSOMA_EXTERNAL_AS_RANK_SHARD_SOURCE_DIGEST"] = manifest["source_digest"]
@@ -192,8 +196,8 @@ def launch(role, cli_template, environment, *, nodes):
     packages = verify_runtime_installation(runtime_root, runtime["commit"], runtime_remote)
     (work / "runtime_packages.json").write_text(json.dumps(packages, indent=2) + "\n")
     env["HOLOSOMA_RUNTIME_GIT_VERIFICATION_PATH"] = str(runtime_verification)
-    if role == "teacher" and args.rank_shards is not None:
-        shards = bind_teacher_shards(args, bindings, env)
+    if args.rank_shards is not None:
+        shards = bind_rank_shards(args, bindings, env, world_size=int(bindings["WORLD_SIZE"]))
         (work / "rank_shards.json").write_text(json.dumps(shards, indent=2) + "\n")
     bind_nccl(env)
     provenance_args = [sys.executable, ROOT / "scripts/compute_training_provenance.py",
