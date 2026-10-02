@@ -69,6 +69,8 @@ def prepare(role, cli_template, environment, nodes, argv=None):
     parser.add_argument("--project", default="carry")
     parser.add_argument("--name", default=role)
     parser.add_argument("--output", type=Path, default=ROOT / "outputs" / role)
+    parser.add_argument("--cache-dir", type=Path,
+                        help="Mesh and simulator cache directory (default: OUTPUT/cache)")
     parser.add_argument("--machine-rank", dest="node_rank", type=int, default=0)
     parser.add_argument("--node-rank", dest="node_rank", type=int, help=argparse.SUPPRESS)
     parser.add_argument("--master-addr", help="First machine address (multiple machines only)")
@@ -169,6 +171,15 @@ def prepare(role, cli_template, environment, nodes, argv=None):
         "OBJECT_SPEC_PATH": bindings["MOTION_BANK"] + "/_clip_object_urdf_map.json",
         "HOLOSOMA_SOURCE_ROOT": str(ROOT),
     })
+    cache = (args.cache_dir or args.output / "cache").expanduser().resolve()
+    run_key = hashlib.sha256(bindings["LOG_DIR"].encode()).hexdigest()[:16]
+    machine_cache = cache / "runs" / run_key / f"machine_{args.node_rank}"
+    env.update({
+        "TMPDIR": str(machine_cache / "tmp"),
+        "HOLOSOMA_OBJECT_USD_CACHE_DIR": str(machine_cache / "object_usd"),
+        "HOLOSOMA_PERCEPTION_MESH_CACHE_DIR": str(cache / "perception_meshes"),
+        "HOLOSOMA_ROBOT_USD_CACHE_DIR": str(machine_cache / "robot_usd"),
+    })
     command = [sys.executable, "-m", "torch.distributed.run", f"--nnodes={nodes}",
                f"--nproc_per_node={len(devices)}", "--max_restarts=0"]
     if nodes == 1:
@@ -219,6 +230,7 @@ def launch(role, cli_template, environment, *, nodes):
     # Separate preflight files for each machine, including on shared storage.
     work = output / "launch" / f"machine_{args.node_rank}"
     work.mkdir(parents=True, exist_ok=False)
+    Path(env["TMPDIR"]).mkdir(parents=True, exist_ok=True)
     remote = run(["git", "remote", "get-url", "origin"], env, capture=True).strip()
     source_commit = args.source_commit or run(["git", "rev-parse", "HEAD"], env, capture=True).strip()
     tree = run(["git", "rev-parse", source_commit + "^{tree}"], env, capture=True).strip()

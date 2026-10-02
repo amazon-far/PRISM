@@ -15,9 +15,15 @@ user or team. `--envs-per-gpu` limits environments on each GPU (default: 2,048).
 The launcher rounds this down when needed to distribute every motion clip
 without truncation. For example, the 129-clip dataset uses 1,935 environments
 on one GPU and 2,048 per GPU on eight GPUs. The effective count is printed at
-startup and recorded in the training config and shard manifest. Changing GPU
+startup and recorded in the training config and shard manifest. Full-resolution
+teacher meshes can exceed 48 GB on one or two GPUs at the default budget;
+reduce `--envs-per-gpu` for these banks. Changing GPU
 or environment counts changes the global batch; convergence is not guaranteed
 to match the released checkpoints.
+
+Mesh conversion and simulator caches are stored under `OUTPUT/cache/`. Use
+`--cache-dir /path/to/cache` to reuse mesh caches on a disk with sufficient space.
+The first launch can spend several minutes preparing large object banks.
 
 Training runs for 40K updates and saves PT/ONNX pairs. Set `--iterations` for a
 short validation run. The launcher verifies the

@@ -98,3 +98,21 @@ def test_too_small_environment_budget_does_not_drop_clips(tmp_path):
         (tmp_path / f"{i}.npz").touch()
     with pytest.raises(ValueError, match="Cannot fit all 9 clips"):
         topology.fit_environments(tmp_path, 1, 8)
+
+
+def test_cache_paths_follow_output_and_isolate_concurrent_runs(tmp_path, monkeypatch):
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "0")
+    shared = tmp_path / "shared cache"
+    environments = []
+    for name in ["run_a", "run_b"]:
+        _, _, _, env, _ = prepare("distillation", _student.CLI, _student.ENVIRONMENT, 1, [
+            "--entity", "test", "--output", str(tmp_path / name), "--cache-dir", str(shared), "--check",
+        ])
+        environments.append(env)
+        for key in ["TMPDIR", "HOLOSOMA_OBJECT_USD_CACHE_DIR", "HOLOSOMA_ROBOT_USD_CACHE_DIR",
+                    "HOLOSOMA_PERCEPTION_MESH_CACHE_DIR"]:
+            assert Path(env[key]).is_relative_to(shared)
+    assert environments[0]["TMPDIR"] != environments[1]["TMPDIR"]
+    assert environments[0]["HOLOSOMA_ROBOT_USD_CACHE_DIR"] != environments[1]["HOLOSOMA_ROBOT_USD_CACHE_DIR"]
+    assert environments[0]["HOLOSOMA_PERCEPTION_MESH_CACHE_DIR"] == environments[1]["HOLOSOMA_PERCEPTION_MESH_CACHE_DIR"]
+    assert not shared.exists()
