@@ -16,9 +16,9 @@ for tool in curl tar sha256sum cmp flock "$python_bin"; do
   command -v "$tool" >/dev/null || { echo "Required command not found: $tool" >&2; exit 1; }
 done
 
-dataset_revision=2498b1dbfda63a8000d28aa1b5d504cf9ff6b21b
+dataset_revision=4240492ccc6bde73c3c4e3009ab3de4859bdbdf7
 archive_name=far-prism-data.tar.gz
-archive_sha256=eb1fbcd2ef2714218292f9faf98e6cf57ac7f792da0becf89b3ca89d65850f5d
+archive_sha256=b030baccb16beb633a647366f1c1a06ae4a8b106923fa7d50d4123b68b1e6a52
 archive_url="https://huggingface.co/datasets/Amazon-FAR/far-prism-data/resolve/$dataset_revision/$archive_name"
 data_dir="${1:-$repo_root/data}"
 mkdir -p -- "$data_dir"

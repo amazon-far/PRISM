@@ -49,8 +49,8 @@ Download and prepare the [Hugging Face dataset](https://huggingface.co/datasets/
 bash download_data.sh
 ```
 
-Object meshes are pending release; setup currently stops at the asset check.
-[Dataset status](docs/data.md).
+Includes object meshes and prepares the student training shards.
+[Dataset details](docs/data.md).
 
 ## Teacher Training
 
