@@ -1,61 +1,44 @@
 # Training
 
-Run these commands from the repository root after [installation](../README.md#installation).
-Use `--help` on any launcher to see its options.
-
-## Student
-
-Online distillation with PPO, **1 node × 8 GPUs**. After the
-[dataset and shard preparation](data.md), use the released teacher 40K and box 23K actor
-initializer from this code repository's [`_ckpts/`](../_ckpts/README.md) directory. These are the
-checkpoint files validated by the launcher; do not substitute the older copies
-inside the dataset archive. The published motion bank already contains the
-rollout commands, so no new teacher rollout or command generation is needed.
+Run from the repository root after [installation](../README.md#installation).
+Both scripts use all visible GPUs on this machine and prepare matching motion
+shards automatically. Each GPU runs one process. Select GPUs with
+`CUDA_VISIBLE_DEVICES`; `--gpus N` uses the first N visible GPUs.
 
 ```bash
-bash train_student.sh --entity YOUR_WANDB_ENTITY
+CUDA_VISIBLE_DEVICES=0 bash train_student.sh --entity YOUR_WANDB_ENTITY
+CUDA_VISIBLE_DEVICES=0,1 bash train_student.sh --entity YOUR_WANDB_ENTITY
 ```
 
-The launcher uses the downloaded dataset, the prepared `data/student_shards_ws8/`
-and the released checkpoints automatically. For another dataset, pass
-`--motion-bank`, `--contact-bank`, `--robot-assets` and matching `--rank-shards`.
+Use a fresh `--output` for each run. Replace `YOUR_WANDB_ENTITY` with your W&B
+user or team. `--envs-per-gpu` limits environments on each GPU (default: 2,048).
+The launcher rounds this down when needed to distribute every motion clip
+without truncation. For example, the 129-clip dataset uses 1,935 environments
+on one GPU and 2,048 per GPU on eight GPUs. The effective count is printed at
+startup and recorded in the training config and shard manifest. Changing GPU
+or environment counts changes the global batch; convergence is not guaranteed
+to match the released checkpoints.
 
-Replace `YOUR_WANDB_ENTITY` with your W&B user or team. Training uses 2,048
-environments per GPU, runs for 40K iterations and saves PT/ONNX pairs. Use the same
-clean PRISM revision and installed HoloSoma revision on every node. The launchers
-detect these revisions and fetch/verify runtime source automatically. Use a new
-`--output` for each run; append `--check` for a CPU CLI check or `--help` for options.
-`--check` only validates the command syntax; it does not validate assets or run
-the simulator.
+Training runs for 40K updates and saves PT/ONNX pairs. Set `--iterations` for a
+short validation run. The launcher verifies the
+clean PRISM revision, installed HoloSoma revision, assets and ONNX contract before
+training. Append `--check` for a CPU command-syntax check; it does not read assets
+or run CUDA. Use `--gpus N --check` to inspect a specific topology, or `--help`
+for options.
 
 ## Teacher
 
-PPO from scratch, 4 nodes × 8 GPUs. This requires a separate prepared
-teacher bank (not yet included in the Hugging Face release). Run on each node
-with `--node-rank` set to 0–3.
+Train a privileged motion-tracking policy with PPO from scratch. Supply a
+prepared teacher bank; teacher-training data is still under review.
 
 ```bash
-bash train_teacher.sh --motion-bank /path/to/teacher_bank --entity YOUR_WANDB_ENTITY \
-  --node-rank NODE_RANK --master-addr NODE_0_IP
+bash train_teacher.sh --motion-bank /path/to/teacher_bank --entity YOUR_WANDB_ENTITY
 ```
-
-For a single-node teacher run, prepare eight rank shards and add
-`--nodes 1 --rank-shards /path/to/teacher_shards_ws8`:
-
-```bash
-python scripts/prepare_as_rank_shards.py \
-  --motion-dir /path/to/teacher_motion_bank \
-  --object-map /path/to/teacher_motion_bank/_clip_object_urdf_map.json \
-  --world-size 8 --environments-per-rank 2048 \
-  --output-root /path/to/teacher_shards_ws8
-```
-
-This keeps 2,048 environments per GPU and all clips, with a smaller global batch
-than the four-node configuration. Training still runs for 40K updates.
 
 ## Rollout
 
-Collect teacher trajectories and contact sidecars. Every clip is retained, including failures.
+Collect teacher trajectories and contact sidecars. Every clip is retained,
+including failures.
 
 ```bash
 bash rollout.sh --motion-bank /path/to/teacher_bank
@@ -63,3 +46,28 @@ bash rollout.sh --motion-bank /path/to/teacher_bank
 
 Rollouts use the released teacher and write to `outputs/rollout/`.
 Pass `--output` for subsequent collections; existing outputs are never overwritten.
+
+## Student
+
+Distill the teacher into a depth policy using the [downloaded data](data.md)
+and released checkpoints in [`_ckpts/`](../_ckpts/README.md). The dataset already
+contains rollout commands, so no new rollout is needed. Use the checkpoints
+from this code repository; older copies in the dataset archive do not satisfy
+the launcher's checkpoint contract.
+
+```bash
+bash train_student.sh --entity YOUR_WANDB_ENTITY
+```
+
+For another dataset, pass `--motion-bank`, `--contact-bank` and `--robot-assets`.
+Matching shards are prepared under the run's output directory. Optionally pass
+`--rank-shards` to reuse a prepared set; its source, GPU count and environment
+count must match. Existing shard trees are verified and never overwritten.
+
+## Multiple machines (optional)
+
+Use the same clean, pushed PRISM commit, pinned HoloSoma installation, complete
+data bank and GPU count on each machine. Add `--machines M --machine-rank R
+--master-addr ADDRESS`, with `R` from 0 to M−1 and `ADDRESS` the first machine's
+reachable address. Run the command on every participating machine. This is
+optional; the default requires only one machine.

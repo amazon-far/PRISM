@@ -3,10 +3,11 @@
 The supported installation uses Linux x86_64, glibc 2.35 or newer, Python 3.11,
 and a CUDA 12.8 compatible NVIDIA driver. Follow NVIDIA's
 [Isaac Sim requirements](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/installation/requirements.html)
-for GPU support. The training recipes were validated with eight 48 GB GPUs
-per node and 2,048 environments per GPU. Memory use also depends on the motion
-bank and object meshes. Changing the GPU count changes the global batch and
-requires matching motion shards.
+for GPU support. The launchers support one or more visible GPUs on a single machine.
+The original training recipes used 48 GB GPUs with 2,048 environments per GPU.
+Memory use also depends on the motion bank and object meshes; lower
+`--envs-per-gpu` when needed. The launcher prepares matching motion shards
+automatically. Changing the GPU count changes the global batch.
 The software is not tied to a hostname, username, mount point or network interface.
 
 On Ubuntu 22.04/24.04, install `git`, `build-essential`, `python3.11-venv`,
@@ -54,6 +55,6 @@ revision, imports the training and rollout entry points, and reports CUDA availa
 HoloSoma simulator backend and advances an empty headless simulation ten steps.
 This smoke check does not establish training convergence or policy success rates.
 
-Motion banks, object assets, contacts, checkpoints, node addresses and output
+Motion banks, object assets, contacts, checkpoints, machine addresses and output
 directories are provided through the launchers' command-line arguments.
 An installation check does not need training data or W&B credentials.

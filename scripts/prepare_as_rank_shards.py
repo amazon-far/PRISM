@@ -1770,6 +1770,7 @@ def prepare_rank_shards(
     world_size: int,
     environments_per_rank: int | None = None,
     expected_source_digest: str | None = None,
+    replace_existing: bool = True,
 ) -> dict[str, Any]:
     if world_size < 1:
         raise ValueError(f"world_size must be >= 1, got {world_size}")
@@ -1795,11 +1796,19 @@ def prepare_rank_shards(
                 expected_source_digest=expected_source_digest,
             )
         except ValueError:
+            if not replace_existing:
+                raise
             # Preserve the existing repair/reject behavior for a non-current
             # publication.  A current sealed tree has already returned without
             # creating a lock beside its read-only namespace.
             pass
     with _output_lock(output_root):
+        if not replace_existing and os.path.lexists(output_root):
+            return validate_published_rank_shards(
+                motion_dir=motion_dir, object_map=object_map, output_root=output_root,
+                world_size=world_size, environments_per_rank=environments_per_rank,
+                expected_source_digest=expected_source_digest,
+            )
         source_guard = _SourceScanGuard()
         metadata, specs = _active_clip_specs(
             motion_dir=motion_dir,

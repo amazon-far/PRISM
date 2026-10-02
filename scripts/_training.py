@@ -43,15 +43,19 @@ def run(command, env, *, capture=False):
 def prepare(role, cli_template, environment, nodes, argv=None):
     parser = argparse.ArgumentParser(
         prog="train_teacher.sh" if role == "teacher" else "train_student.sh",
-        description=f"Train {role}: {nodes} node(s), 8 GPUs per node, 2048 environments per GPU."
+        description=f"Train {role} on the visible GPUs of this machine."
     )
     parser.add_argument("--motion-bank", type=Path, required=role == "teacher",
                         help="Prepared single-slot motion bank (student default: downloaded Hugging Face bank)")
     parser.add_argument("--rank-shards", type=Path,
-                        help="Prepared shards (downloaded student default: data/student_shards_ws8); required for a single-node teacher")
-    if role == "teacher":
-        parser.add_argument("--nodes", type=int, choices=(1, 4), default=nodes,
-                            help="Teacher nodes, each with eight GPUs (default: 4)")
+                        help="Use existing matching shards (default: prepare automatically)")
+    parser.add_argument("--gpus", type=int, help="Use the first N visible GPUs (default: all)")
+    parser.add_argument("--envs-per-gpu", type=int, default=2048,
+                        help="Environment budget per GPU; rounded down to fit all clips (default: 2048)")
+    parser.add_argument("--iterations", type=int, default=40000, help="Training updates (default: 40000)")
+    parser.add_argument("--machines", dest="nodes", type=int, default=nodes,
+                        help="Number of machines (default: 1)")
+    parser.add_argument("--nodes", dest="nodes", type=int, help=argparse.SUPPRESS)
     if role == "distillation":
         parser.add_argument("--contact-bank", type=Path,
                             help="Contact sidecars (default: downloaded dataset; required for a custom bank)")
@@ -65,8 +69,9 @@ def prepare(role, cli_template, environment, nodes, argv=None):
     parser.add_argument("--project", default="carry")
     parser.add_argument("--name", default=role)
     parser.add_argument("--output", type=Path, default=ROOT / "outputs" / role)
-    parser.add_argument("--node-rank", type=int, default=0)
-    parser.add_argument("--master-addr", default="127.0.0.1" if nodes == 1 else None)
+    parser.add_argument("--machine-rank", dest="node_rank", type=int, default=0)
+    parser.add_argument("--node-rank", dest="node_rank", type=int, help=argparse.SUPPRESS)
+    parser.add_argument("--master-addr", help="First machine address (multiple machines only)")
     parser.add_argument("--master-port", type=int, default=29500)
     parser.add_argument("--source-ref", default="main")
     parser.add_argument("--source-commit", help="Override the project commit (default: current HEAD)")
@@ -77,30 +82,42 @@ def prepare(role, cli_template, environment, nodes, argv=None):
     parser.add_argument("--check", action="store_true",
                         help="Parse and print the training command on CPU, without starting training")
     args = parser.parse_args(argv)
+    downloaded_bank = False
     if role == "distillation":
         default_bank = STUDENT_DATA / "motion_bank"
         if args.motion_bank is None or args.motion_bank.expanduser().resolve() == default_bank:
             args.motion_bank = default_bank
             args.contact_bank = args.contact_bank or STUDENT_DATA / "contact_sidecars"
             args.robot_assets = args.robot_assets or STUDENT_DATA / "robot_assets"
-            args.rank_shards = args.rank_shards or ROOT / "data" / "student_shards_ws8"
+            downloaded_bank = True
         elif args.contact_bank is None or args.robot_assets is None:
             parser.error("A custom --motion-bank requires --contact-bank and --robot-assets")
-    if role == "teacher":
-        nodes = args.nodes
-        if nodes == 1 and args.rank_shards is None:
-            parser.error("--nodes 1 requires --rank-shards prepared for 8 ranks and 2048 environments per rank")
-    if nodes == 1 and args.master_addr is None:
-        args.master_addr = "127.0.0.1"
+    nodes = args.nodes
+    if nodes < 1 or args.envs_per_gpu < 1 or args.iterations < 1:
+        parser.error("--machines, --envs-per-gpu and --iterations must be positive")
     if not 0 <= args.node_rank < nodes:
-        parser.error(f"--node-rank must be in [0, {nodes - 1}]")
+        parser.error(f"--machine-rank must be in [0, {nodes - 1}]")
+    from scripts._training_topology import visible_devices, fit_environments, shard_directory
+    try:
+        devices = visible_devices(check=args.check, count=args.gpus)
+        world_size = nodes * len(devices)
+        environments = args.envs_per_gpu if args.check else fit_environments(
+            args.motion_bank.expanduser().resolve(), world_size, args.envs_per_gpu,
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
+    args.environments_per_rank = environments
+    args.prepare_shards = args.rank_shards is None
+    if args.rank_shards is None:
+        args.rank_shards = (shard_directory(ROOT / "data", world_size, environments)
+                            if downloaded_bank else args.output / "rank_shards")
     if not 1024 <= args.master_port < 65535:
         parser.error("--master-port must be between 1024 and 65534")
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]*", args.name):
         parser.error("--name must be a simple run name without spaces or slashes")
     if not args.check:
-        if not args.master_addr:
-            parser.error("--master-addr must be the address of node 0")
+        if nodes > 1 and not args.master_addr:
+            parser.error("--master-addr must be the first machine address")
         if args.source_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", args.source_commit):
             parser.error("--source-commit must be the full SHA pushed to --source-ref")
         if args.runtime_commit is not None and not re.fullmatch(r"[0-9a-f]{40}", args.runtime_commit):
@@ -110,7 +127,9 @@ def prepare(role, cli_template, environment, nodes, argv=None):
         "TEACHER_MOTION_BANK": str(args.motion_bank.expanduser().resolve()),
         "WANDB_ENTITY": args.entity, "WANDB_PROJECT": args.project,
         "RUN_NAME": args.name, "LOG_DIR": str(args.output.expanduser().resolve()),
-        "NODES": str(nodes), "WORLD_SIZE": str(nodes * 8), "TOTAL_ENVS": str(nodes * 8 * 2048),
+        "NODES": str(nodes), "NPROC": str(len(devices)), "WORLD_SIZE": str(world_size),
+        "TOTAL_ENVS": str(world_size * environments), "MULTIGPU": str(world_size > 1),
+        "ITERATIONS": str(args.iterations), "LAST_ITERATION": str(args.iterations - 1),
     }
     if role == "distillation":
         for key in ("contact_bank", "robot_assets", "teacher_checkpoint", "initializer_checkpoint"):
@@ -143,33 +162,39 @@ def prepare(role, cli_template, environment, nodes, argv=None):
             env.pop(key, None)
     env.update({
         "PYTHONPATH": str(ROOT),
-        "CUDA_VISIBLE_DEVICES": os.environ.get("CUDA_VISIBLE_DEVICES", "0,1,2,3,4,5,6,7"),
-        "NODE_RANK": str(args.node_rank), "MASTER_ADDR": args.master_addr or "NODE_0_ADDRESS",
+        "CUDA_VISIBLE_DEVICES": ",".join(devices),
+        "NODE_RANK": str(args.node_rank), "MASTER_ADDR": args.master_addr or "127.0.0.1",
         "MASTER_PORT": str(args.master_port), "HEADLESS": "1",
         "MOTION_DIR": bindings["MOTION_BANK"],
         "OBJECT_SPEC_PATH": bindings["MOTION_BANK"] + "/_clip_object_urdf_map.json",
         "HOLOSOMA_SOURCE_ROOT": str(ROOT),
     })
-    devices = env["CUDA_VISIBLE_DEVICES"].split(",")
-    if len(devices) != 8 or len(set(devices)) != 8 or any(not device.strip() for device in devices):
-        parser.error("CUDA_VISIBLE_DEVICES must select eight distinct GPUs")
     command = [sys.executable, "-m", "torch.distributed.run", f"--nnodes={nodes}",
-               "--nproc_per_node=8", f"--node_rank={args.node_rank}", "--max_restarts=0",
-               f"--master_addr={env['MASTER_ADDR']}", f"--master_port={args.master_port}",
-               "--module", "holosoma.train_agent_rank_visible", *cli]
+               f"--nproc_per_node={len(devices)}", "--max_restarts=0"]
+    if nodes == 1:
+        command += ["--standalone"]
+    else:
+        command += [f"--node_rank={args.node_rank}", f"--master_addr={env['MASTER_ADDR']}",
+                    f"--master_port={args.master_port}"]
+    command += ["--module", "holosoma.train_agent_rank_visible", *cli]
     return args, bindings, cli, env, command
 
 
 def bind_rank_shards(args, bindings, env, *, world_size):
     """Validate explicit shards against their source before binding their identity."""
-    from scripts.prepare_as_rank_shards import validate_published_rank_shards
+    from scripts.prepare_as_rank_shards import prepare_rank_shards, validate_published_rank_shards
 
-    manifest = validate_published_rank_shards(
+    shard_root = args.rank_shards.expanduser().absolute()
+    # Never regenerate an existing tree: another training process may use it.
+    validator = (prepare_rank_shards if args.prepare_shards and not os.path.lexists(shard_root)
+                 else validate_published_rank_shards)
+    manifest = validator(
         motion_dir=Path(bindings["MOTION_BANK"]),
         object_map=Path(bindings["MOTION_BANK"]) / "_clip_object_urdf_map.json",
         output_root=args.rank_shards.expanduser().absolute(),
         world_size=world_size,
-        environments_per_rank=2048,
+        environments_per_rank=args.environments_per_rank,
+        **({"replace_existing": False} if validator is prepare_rank_shards else {}),
     )
     env["HOLOSOMA_EXTERNAL_AS_RANK_SHARD_SOURCE_DIGEST"] = manifest["source_digest"]
     return manifest
@@ -181,12 +206,18 @@ def launch(role, cli_template, environment, *, nodes):
          "--expected-motion-end-mode", "episodic", "--", *cli], env)
     if args.check:
         print(shlex.join(command))
-        print("CLI check passed; no assets, Git remote, GPU or W&B run were accessed.")
+        print("CLI syntax check passed; no assets, Git remote, GPU or W&B run were accessed. "
+              "GPU detection and environment fitting happen at launch; use --gpus to model a GPU count.")
         return
 
+    print(f"Training on {bindings['NPROC']} GPUs per machine: "
+          f"{args.environments_per_rank} environments per GPU, {bindings['TOTAL_ENVS']} total.", flush=True)
+    if args.environments_per_rank != args.envs_per_gpu:
+        print(f"Adjusted environment budget from {args.envs_per_gpu} to {args.environments_per_rank} "
+              "per GPU to retain every motion clip.", flush=True)
     output = Path(bindings["LOG_DIR"])
-    # A distinct directory per node keeps preflight files from racing on shared storage.
-    work = output / "launch" / f"node_{args.node_rank}"
+    # Separate preflight files for each machine, including on shared storage.
+    work = output / "launch" / f"machine_{args.node_rank}"
     work.mkdir(parents=True, exist_ok=False)
     remote = run(["git", "remote", "get-url", "origin"], env, capture=True).strip()
     source_commit = args.source_commit or run(["git", "rev-parse", "HEAD"], env, capture=True).strip()
@@ -228,15 +259,17 @@ def launch(role, cli_template, environment, *, nodes):
     (work / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
     (work / "command.json").write_text(json.dumps(command, indent=2) + "\n")
     if role == "distillation":
-        run([sys.executable, ROOT / "scripts/box23k_policy_init_preflight.py", "--world-size", "8",
+        run([sys.executable, ROOT / "scripts/box23k_policy_init_preflight.py", "--world-size", bindings["WORLD_SIZE"],
+             "--environments-per-rank", str(args.environments_per_rank),
              "--allow-distillation", "--output", work / "initializer.json", "--", *cli], env)
     else:
-        run([sys.executable, Path(__file__), "--teacher-onnx", str(work / "teacher.onnx"), *cli], env)
+        run([sys.executable, Path(__file__), "--teacher-onnx", str(work / "teacher.onnx"),
+             str(args.environments_per_rank), *cli], env)
     os.chdir(ROOT)
     os.execve(sys.executable, command, env)
 
 
-def teacher_onnx_preflight(path, cli):
+def teacher_onnx_preflight(path, cli, environments_per_rank=2048):
     """Export and check the fresh teacher actor before starting the simulator."""
     import dataclasses
     import torch
@@ -251,7 +284,7 @@ def teacher_onnx_preflight(path, cli):
 
     torch.set_num_threads(2)
     config = tyro.cli(AnnotatedExperimentConfig, args=cli, config=TYRO_CONIFG)
-    config = dataclasses.replace(config, training=dataclasses.replace(config.training, num_envs=2048))
+    config = dataclasses.replace(config, training=dataclasses.replace(config.training, num_envs=environments_per_rank))
     config = apply_perception_overrides(apply_observation_overrides(config))
     finalize_runtime_asset_provenance(config)
     torch.manual_seed(config.training.seed)
@@ -276,4 +309,4 @@ def teacher_onnx_preflight(path, cli):
 if __name__ == "__main__":
     if len(sys.argv) < 4 or sys.argv[1] != "--teacher-onnx":
         raise SystemExit("Use train_teacher.sh or train_student.sh")
-    teacher_onnx_preflight(sys.argv[2], sys.argv[3:])
+    teacher_onnx_preflight(sys.argv[2], sys.argv[4:], int(sys.argv[3]))

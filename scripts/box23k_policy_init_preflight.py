@@ -17,10 +17,13 @@ ROOT = Path(__file__).resolve().parents[1]
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--world-size", type=int, choices=(8, 32), default=32)
+    parser.add_argument("--world-size", type=int, required=True)
+    parser.add_argument("--environments-per-rank", type=int, default=2048)
     parser.add_argument("--allow-distillation", action="store_true")
     parser.add_argument("train_args", nargs=argparse.REMAINDER)
     args = parser.parse_args()
+    if args.world_size < 1 or args.environments_per_rank < 1:
+        parser.error("GPU and environment counts must be positive")
     cli = args.train_args
     if cli and cli[0] == "--":
         cli = cli[1:]
@@ -40,9 +43,9 @@ def main() -> None:
 
     torch.set_num_threads(2)
     config = tyro.cli(AnnotatedExperimentConfig, args=cli, config=TYRO_CONIFG)
-    if config.training.num_envs != args.world_size * 2048:
-        raise ValueError(f"Box23K profile requires exactly {args.world_size} ranks x 2048 environments.")
-    config = dataclasses.replace(config, training=dataclasses.replace(config.training, num_envs=2048))
+    if config.training.num_envs != args.world_size * args.environments_per_rank:
+        raise ValueError(f"Box23K profile requires exactly {args.world_size} GPUs x {args.environments_per_rank} environments.")
+    config = dataclasses.replace(config, training=dataclasses.replace(config.training, num_envs=args.environments_per_rank))
     config = apply_perception_overrides(apply_observation_overrides(config))
     if not config.training.export_onnx:
         raise ValueError("Box23K profile requires ONNX export.")

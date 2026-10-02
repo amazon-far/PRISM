@@ -7,10 +7,10 @@ matching contact sidecars, object visual/collision meshes, G1 assets and
 reference-replay videos. This is a filtered subset of the original 137
 trajectories. Raw videos and the teacher-training motion bank remain under review.
 
-Run the data script from the repository root (requires Python 3.11, `curl` and
+Run the data script from the repository root (requires the installed simulation environment, `curl` and
 standard Linux utilities). It downloads the single **495 MB** archive, checks
 its SHA256, extracts and verifies every file, then checks the object assets and
-prepares eight training shards:
+prepares training shards for the visible GPUs:
 
 ```bash
 bash download_data.sh
@@ -42,7 +42,9 @@ match the original assets. Visual geometry differs from the original training
 assets; depth-observation equivalence has not been validated. Original
 visual meshes are also available in the Hugging Face dataset.
 
-The script generates `data/student_shards_ws8/`
-covering all 129 published clips. After it succeeds, follow the
+The script generates `data/student_shards_wsN/` (with an environment-count
+suffix when needed), covering all 129 published clips. If you later select a
+different GPU count or environment budget, the training launcher prepares a
+matching set automatically. After it succeeds, follow the
 [student distillation instructions](training.md#student) to use them.
 The dataset and generated shards remain local under Git-ignored `data/`.

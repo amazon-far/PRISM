@@ -12,6 +12,13 @@ from scripts import _teacher as train_teacher
 from scripts import _student as train_distillation
 
 
+@pytest.fixture(autouse=True)
+def cpu_launch_planning(monkeypatch):
+    monkeypatch.setattr("scripts._training_topology.visible_devices", lambda **kw: list("01234567"))
+    monkeypatch.setattr("scripts._training_topology.fit_environments", lambda bank, world, budget: budget)
+    monkeypatch.setattr(_training, "bind_rank_shards", lambda *a, **kw: {"source_digest": "d" * 64})
+
+
 def arguments(role, tmp_path, *, check=False):
     args = ["--motion-bank", str(tmp_path / "motion bank"), "--entity", "test",
             "--output", str(tmp_path / "output"), "--master-addr", "10.0.0.1",

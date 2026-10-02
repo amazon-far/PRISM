@@ -61,16 +61,10 @@ else
 fi
 
 echo "Downloaded files verified. Preparing training shards..."
-motion_bank="$dataset_dir/data/train-student/data/motion_bank"
-shard_root="$data_dir/student_shards_ws8"
-if ! PYTHONDONTWRITEBYTECODE=1 "$python_bin" "$repo_root/scripts/prepare_as_rank_shards.py" \
-    --motion-dir "$motion_bank" \
-    --object-map "$motion_bank/_clip_object_urdf_map.json" \
-    --world-size 8 --environments-per-rank 2048 \
-    --output-root "$shard_root"; then
+if ! PYTHONPATH="$repo_root" PYTHONDONTWRITEBYTECODE=1 "$python_bin" \
+    -m scripts.prepare_training_data "$data_dir"; then
   echo "Training data preparation failed; see the error above and docs/data.md." >&2
   exit 1
 fi
 
 echo "Training data prepared: $dataset_dir"
-echo "Training shards verified: $shard_root"

@@ -10,6 +10,14 @@ from scripts._training import ROOT, STUDENT_DATA, bind_rank_shards, prepare
 from scripts.prepare_as_rank_shards import prepare_rank_shards
 
 
+@pytest.fixture(autouse=True)
+def cpu_launch_planning(monkeypatch):
+    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "0,1,2,3,4,5,6,7")
+    monkeypatch.setattr("scripts._training_topology.subprocess.run",
+                        lambda *a, **kw: SimpleNamespace(stdout="8"))
+    monkeypatch.setattr("scripts._training_topology.fit_environments", lambda bank, world, budget: budget)
+
+
 def test_teacher_launch_uses_installed_module(monkeypatch):
     monkeypatch.setenv("PYTHONPATH", "/unrelated/source/tree")
     _, _, _, env, command = prepare("teacher", [], {}, 4, [
@@ -43,7 +51,7 @@ def test_single_node_teacher_binds_batch_topology_and_explicit_shards(tmp_path):
         "--motion-bank", "/external/motions", "--entity", "test", "--check",
         "--nodes", "1", "--rank-shards", str(shards),
     ])
-    assert "--nnodes=1" in command and "--master_addr=127.0.0.1" in command
+    assert "--nnodes=1" in command and "--standalone" in command
     assert "--training.num-envs=16384" in cli
     assert env["NNODES"] == "1" and env["HOLOSOMA_EXTERNAL_AS_WORLD_SIZE"] == "8"
     assert env["HOLOSOMA_GLOO_GRAD_REDUCE"] == "1"
@@ -53,23 +61,30 @@ def test_single_node_teacher_binds_batch_topology_and_explicit_shards(tmp_path):
     assert not shards.exists()  # --check never prepares or reads data.
 
 
-@pytest.mark.parametrize("extra", [[], ["--rank-shards", "/shards", "--node-rank", "1"]])
-def test_single_node_teacher_rejects_missing_shards_or_invalid_node_rank(extra):
+def test_single_machine_teacher_prepares_shards_automatically():
+    args, _, cli, env, command = prepare("teacher", CLI, ENVIRONMENT, 1, [
+        "--motion-bank", "/external/motions", "--entity", "test", "--check",
+    ])
+    assert args.prepare_shards
+    assert "--nnodes=1" in command and "--training.num-envs=16384" in cli
+    assert env["HOLOSOMA_HIERARCHICAL_GRAD_REDUCE"] == "0"
+    assert env["HOLOSOMA_MOTION_SHARD_MANIFEST"].endswith("/rank_shards/manifest.json")
+
+
+def test_invalid_machine_rank():
     with pytest.raises(SystemExit):
-        prepare("teacher", CLI, ENVIRONMENT, 4, [
-            "--motion-bank", "/external/motions", "--entity", "test", "--check",
-            "--nodes", "1", *extra,
+        prepare("teacher", CLI, ENVIRONMENT, 1, [
+            "--motion-bank", "/external/motions", "--entity", "test", "--check", "--machine-rank", "1",
         ])
 
 
-def test_default_teacher_preserves_four_node_recipe():
-    _, _, cli, env, command = prepare("teacher", CLI, ENVIRONMENT, 4, [
-        "--motion-bank", "/external/motions", "--entity", "test", "--check",
+def test_explicit_multiple_machines_preserve_batch_and_reduction():
+    _, _, cli, env, command = prepare("teacher", CLI, ENVIRONMENT, 1, [
+        "--motion-bank", "/external/motions", "--entity", "test", "--check", "--machines", "4",
     ])
     assert "--nnodes=4" in command and "--training.num-envs=65536" in cli
     assert env["HOLOSOMA_EXTERNAL_AS_WORLD_SIZE"] == "32"
     assert env["HOLOSOMA_HIERARCHICAL_GRAD_REDUCE"] == "1"
-    assert env["HOLOSOMA_MOTION_SHARD_MANIFEST"].endswith("/ws32/manifest.json")
 
 
 def test_student_accepts_new_dataset_shards_without_historical_identity(tmp_path):
@@ -138,7 +153,7 @@ def test_shard_binding_validates_source_and_topology(tmp_path):
     published = prepare_rank_shards(motion_dir=bank, object_map=bank / "_clip_object_urdf_map.json",
                                     output_root=shards, world_size=8, environments_per_rank=2048)
     env = {}
-    args = SimpleNamespace(nodes=1, rank_shards=shards)
+    args = SimpleNamespace(rank_shards=shards, prepare_shards=False, environments_per_rank=2048)
     bound = bind_rank_shards(args, {"MOTION_BANK": str(bank)}, env, world_size=8)
     assert bound["clip_count"] == 9
     assert env["HOLOSOMA_EXTERNAL_AS_RANK_SHARD_SOURCE_DIGEST"] == published["source_digest"]

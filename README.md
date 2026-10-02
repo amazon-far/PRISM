@@ -52,15 +52,17 @@ bash download_data.sh
 Includes object meshes and prepares the student training shards.
 [Dataset details](docs/data.md).
 
+Both training scripts use all visible GPUs on this machine. Set
+`CUDA_VISIBLE_DEVICES=0` for one GPU or `CUDA_VISIBLE_DEVICES=0,1` for a subset.
+Use `--envs-per-gpu` to lower memory use. [Training details](docs/training.md).
+
 ## Teacher Training
 
-Train a privileged motion-tracking policy with PPO. Run on each node with
-`NODE_RANK` set to 0–3 and `NODE_0_IP` set to the first node's address.
+Train a privileged motion-tracking policy with PPO.
 Teacher-training data is still under review; supply a prepared teacher bank.
 
 ```bash
-bash train_teacher.sh --motion-bank /path/to/teacher_bank --entity YOUR_WANDB_ENTITY \
-  --node-rank NODE_RANK --master-addr NODE_0_IP
+bash train_teacher.sh --motion-bank /path/to/teacher_bank --entity YOUR_WANDB_ENTITY
 ```
 
 ## Rollout
