@@ -12,16 +12,13 @@ CUDA_VISIBLE_DEVICES=0,1 bash train_student.sh --entity YOUR_WANDB_ENTITY
 
 Use a fresh `--output` for each run. Replace `YOUR_WANDB_ENTITY` with your W&B
 user or team. `--envs-per-gpu` limits environments on each GPU (default: 2,048).
-PhysX buffer capacities scale with this budget and retain the original
-capacities at 2,048 environments per GPU. The launcher rounds the environment
-count down when needed to distribute every motion clip
+The launcher rounds this down when needed to distribute every motion clip
 without truncation. For example, the 129-clip dataset uses 1,935 environments
 on one GPU and 2,048 per GPU on eight GPUs. The effective count is printed at
-startup and recorded in the training config and shard manifest. Full-resolution
-teacher meshes can exceed 48 GB on one or two GPUs at the default budget.
-For the original 137-clip teacher bank on these GPUs, use `--envs-per-gpu 512`.
-This setting passed two-update training and PT/ONNX export checks on one and
-two 48 GB GPUs. Changing GPU or environment counts changes the global batch;
+startup and recorded in the training config and shard manifest. PhysX retains
+the original fixed buffer capacities at every GPU and environment count.
+Full-resolution teacher meshes can exceed 48 GB on one or two GPUs at the
+default budget. Changing GPU or environment counts changes the global batch;
 convergence is not guaranteed to match the released checkpoints.
 
 Mesh conversion and simulator caches are stored under `OUTPUT/cache/`. Use

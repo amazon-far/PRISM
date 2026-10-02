@@ -116,25 +116,3 @@ def test_cache_paths_follow_output_and_isolate_concurrent_runs(tmp_path, monkeyp
     assert environments[0]["HOLOSOMA_ROBOT_USD_CACHE_DIR"] != environments[1]["HOLOSOMA_ROBOT_USD_CACHE_DIR"]
     assert environments[0]["HOLOSOMA_PERCEPTION_MESH_CACHE_DIR"] == environments[1]["HOLOSOMA_PERCEPTION_MESH_CACHE_DIR"]
     assert not shared.exists()
-
-
-def test_physics_buffers_preserve_reference_and_scale_with_environment_budget():
-    original = topology.physics_buffers(2048)
-    assert list(map(int, original.values())) == [335544320, 469762048, 83886080, 268435456]
-    reduced = topology.physics_buffers(411)
-    assert all(int(reduced[key]) < int(original[key]) for key in original)
-    assert int(reduced["PHYSX_COLLISION_STACK"]) >= 2**26
-    assert int(reduced["PHYSX_FOUND_LOST_AGGREGATE"]) >= 2**25
-    larger = topology.physics_buffers(4096)
-    assert all(int(larger[key]) == int(original[key]) * 2 for key in original)
-
-
-@pytest.mark.parametrize("role,module", [("teacher", _teacher), ("distillation", _student)])
-def test_lower_environment_budget_reduces_actual_physx_cli(role, module, monkeypatch):
-    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "0")
-    _, _, cli, _, _ = prepare(role, module.CLI, module.ENVIRONMENT, 1, [
-        "--entity", "test", "--motion-bank", "/bank", "--check", "--envs-per-gpu", "512",
-        *(["--contact-bank", "/contacts", "--robot-assets", "/robot"] if role == "distillation" else []),
-    ])
-    assert "--simulator.config.sim.physx.gpu-found-lost-pairs-capacity=83886080" in cli
-    assert "--simulator.config.sim.physx.gpu-collision-stack-size=67108864" in cli
