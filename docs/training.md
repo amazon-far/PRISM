@@ -12,7 +12,9 @@ CUDA_VISIBLE_DEVICES=0,1 bash train_student.sh --entity YOUR_WANDB_ENTITY
 
 Use a fresh `--output` for each run. Replace `YOUR_WANDB_ENTITY` with your W&B
 user or team. `--envs-per-gpu` limits environments on each GPU (default: 2,048).
-The launcher rounds this down when needed to distribute every motion clip
+PhysX buffer capacities scale with this budget and retain the original
+capacities at 2,048 environments per GPU. The launcher rounds the environment
+count down when needed to distribute every motion clip
 without truncation. For example, the 129-clip dataset uses 1,935 environments
 on one GPU and 2,048 per GPU on eight GPUs. The effective count is printed at
 startup and recorded in the training config and shard manifest. Full-resolution

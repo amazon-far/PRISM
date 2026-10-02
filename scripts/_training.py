@@ -99,7 +99,7 @@ def prepare(role, cli_template, environment, nodes, argv=None):
         parser.error("--machines, --envs-per-gpu and --iterations must be positive")
     if not 0 <= args.node_rank < nodes:
         parser.error(f"--machine-rank must be in [0, {nodes - 1}]")
-    from scripts._training_topology import visible_devices, fit_environments, shard_directory
+    from scripts._training_topology import visible_devices, fit_environments, shard_directory, physics_buffers
     try:
         devices = visible_devices(check=args.check, count=args.gpus)
         world_size = nodes * len(devices)
@@ -133,6 +133,7 @@ def prepare(role, cli_template, environment, nodes, argv=None):
         "TOTAL_ENVS": str(world_size * environments), "MULTIGPU": str(world_size > 1),
         "ITERATIONS": str(args.iterations), "LAST_ITERATION": str(args.iterations - 1),
     }
+    bindings.update(physics_buffers(environments))
     if role == "distillation":
         for key in ("contact_bank", "robot_assets", "teacher_checkpoint", "initializer_checkpoint"):
             bindings[key.upper()] = str(getattr(args, key).expanduser().resolve())
