@@ -18,10 +18,11 @@ count down when needed to distribute every motion clip
 without truncation. For example, the 129-clip dataset uses 1,935 environments
 on one GPU and 2,048 per GPU on eight GPUs. The effective count is printed at
 startup and recorded in the training config and shard manifest. Full-resolution
-teacher meshes can exceed 48 GB on one or two GPUs at the default budget;
-reduce `--envs-per-gpu` for these banks. Changing GPU
-or environment counts changes the global batch; convergence is not guaranteed
-to match the released checkpoints.
+teacher meshes can exceed 48 GB on one or two GPUs at the default budget.
+For the original 137-clip teacher bank on these GPUs, use `--envs-per-gpu 512`.
+This setting passed two-update training and PT/ONNX export checks on one and
+two 48 GB GPUs. Changing GPU or environment counts changes the global batch;
+convergence is not guaranteed to match the released checkpoints.
 
 Mesh conversion and simulator caches are stored under `OUTPUT/cache/`. Use
 `--cache-dir /path/to/cache` to reuse mesh caches on a disk with sufficient space.
