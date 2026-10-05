@@ -1,4 +1,12 @@
-"""Pytest configuration to ensure proper import order for isaacgym compatibility."""
+"""Configure release-script imports and simulator-compatible test collection."""
+
+from pathlib import Path
+import sys
+
+# Preserve root-level script imports when pytest is invoked via its console entry point.
+repo_root = str(Path(__file__).resolve().parents[1])
+if repo_root not in sys.path:
+    sys.path.insert(0, repo_root)
 
 # Import torch safely before any isaacgym imports during test collection
 from holosoma.utils.safe_torch_import import torch  # noqa: F401
