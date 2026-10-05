@@ -1,3 +1,0 @@
-# Preserve the exact upstream asset/vendor bytes, including existing whitespace.
-src/holosoma/holosoma/data/** -whitespace
-src/holosoma/holosoma/third_party/** -whitespace

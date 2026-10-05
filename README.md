@@ -98,4 +98,4 @@ If you use PRISM in your research, please cite:
 
 See [LICENSE](LICENSE), [NOTICE](NOTICE) and [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES).
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for security reporting.
+Report security issues through [AWS Vulnerability Reporting](https://aws.amazon.com/security/vulnerability-reporting/).
