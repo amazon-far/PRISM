@@ -12,7 +12,7 @@ a distribution shift.
 Usage (on a CUDA host):
 
     HOLOSOMA_FFS_REPO=... HOLOSOMA_FFS_MODEL=... \
-    python scripts/compare_depth_sources.py depth_pairs.npz
+    python extras/analysis/compare_depth_sources.py depth_pairs.npz
 """
 
 from __future__ import annotations

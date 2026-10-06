@@ -14,7 +14,7 @@ from holosoma_inference.config.config_values.inference import (
 )
 from holosoma_inference.policies.wbt import WholeBodyTrackingPolicy
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 MODEL = ROOT / "_ckpts/student_28000.onnx"
 
 

@@ -11,14 +11,16 @@
     "Remote stereo rejects malformed packet lengths before array decoding.",
     "Depth startup checks preserve the source saturation exception and additionally check every sampled frame.",
     "Remote camera services are opt-in; diagnostic recording is opt-in; GPU diagnostics are read-only.",
-    "Whitespace and comments cleaned without changing the source controller or depth algorithms."
+    "Whitespace and comments cleaned without changing the source controller or depth algorithms.",
+    "Optional native-depth launchers, analysis tools, tests, community documents and provenance are grouped under extras; relocated launchers still resolve the repository root."
   ],
   "files": [
     {
-      "path": "real_depth.sh",
+      "path": "extras/native_depth/real_depth.sh",
       "source_sha256": "9802003cd359b3975db88a5e2df423ffff55db8df66485579ee74ad47bb9d06b",
-      "release_sha256": "4f327e7efd191d154960570967f683d2d84a484ae17855bdc05b602f94ca6069",
-      "unchanged": false
+      "release_sha256": "631176322c8e73e343f12a3679194332d5d394a60bb404ed248058b2e05632f7",
+      "unchanged": false,
+      "source_path": "real_depth.sh"
     },
     {
       "path": "real_drop.sh",
@@ -45,16 +47,18 @@
       "unchanged": false
     },
     {
-      "path": "real_run.sh",
+      "path": "extras/native_depth/real_run.sh",
       "source_sha256": "31afb5543657ceac72a5b37ad6f31b970e9d9aef6007af481b18df04d89e48ff",
-      "release_sha256": "74ef6e2e6247b8f21a1ed7ef7b13f0ee063ca45a649e3d76a53cba596450b014",
-      "unchanged": false
+      "release_sha256": "a4c605a0314f8181ca67010c54db627fa1e32ba178f020353c9ff6401f67539b",
+      "unchanged": false,
+      "source_path": "real_run.sh"
     },
     {
-      "path": "scripts/capture_depth_pairs.py",
+      "path": "extras/analysis/capture_depth_pairs.py",
       "source_sha256": "03620987c97932f163eb4c8d6bbacbfdf54a84e6804f22cb7b497ae6098869a1",
-      "release_sha256": "03620987c97932f163eb4c8d6bbacbfdf54a84e6804f22cb7b497ae6098869a1",
-      "unchanged": true
+      "release_sha256": "040fd384f8525bf9ca3eda15553204bc585460b990d29bbe149f31503bf09eb7",
+      "unchanged": false,
+      "source_path": "scripts/capture_depth_pairs.py"
     },
     {
       "path": "scripts/check_gpu_perf.sh",
@@ -63,28 +67,32 @@
       "unchanged": false
     },
     {
-      "path": "scripts/compare_depth_sources.py",
+      "path": "extras/analysis/compare_depth_sources.py",
       "source_sha256": "28aee28b310ff75ddb3cf1593b003cc9793182769c8046b0d2e66df873b35e8e",
-      "release_sha256": "28aee28b310ff75ddb3cf1593b003cc9793182769c8046b0d2e66df873b35e8e",
-      "unchanged": true
+      "release_sha256": "ff28a29e09d704b2cd6d62200f7c2095636e0c501b313b994ec08ffefd985a72",
+      "unchanged": false,
+      "source_path": "scripts/compare_depth_sources.py"
     },
     {
-      "path": "scripts/compare_real_depth_evidence.py",
+      "path": "extras/analysis/compare_real_depth_evidence.py",
       "source_sha256": "1d32d4ed3cd7c0cc5461970b212cda78d03ec0c27b4b842b70753ac44c354731",
       "release_sha256": "1d32d4ed3cd7c0cc5461970b212cda78d03ec0c27b4b842b70753ac44c354731",
-      "unchanged": true
+      "unchanged": true,
+      "source_path": "scripts/compare_real_depth_evidence.py"
     },
     {
-      "path": "scripts/depth_relay_pub.py",
+      "path": "extras/native_depth/depth_relay_pub.py",
       "source_sha256": "6ebbdc216cb5bf751c807881bb872220be42a874fad2e892439802e27c55a06a",
-      "release_sha256": "6ebbdc216cb5bf751c807881bb872220be42a874fad2e892439802e27c55a06a",
-      "unchanged": true
+      "release_sha256": "2a7292ac58e5427bc69995f09d0da1b61280c06329a6dfa1a1a6a5135bacad4b",
+      "unchanged": false,
+      "source_path": "scripts/depth_relay_pub.py"
     },
     {
-      "path": "scripts/depth_relay_sub.py",
+      "path": "extras/native_depth/depth_relay_sub.py",
       "source_sha256": "8baccef1d3a1e12e256692800f407d85b0058dbb7837245af60cb2185c5e19e7",
-      "release_sha256": "8baccef1d3a1e12e256692800f407d85b0058dbb7837245af60cb2185c5e19e7",
-      "unchanged": true
+      "release_sha256": "dbce2e00baf6e8e8e969d51f1b29df0d1b104efddb99d120b6a79417bfc06cdd",
+      "unchanged": false,
+      "source_path": "scripts/depth_relay_sub.py"
     },
     {
       "path": "scripts/real_ffs_relay.sh",
@@ -489,16 +497,18 @@
       "unchanged": true
     },
     {
-      "path": "src/holosoma_inference/holosoma_inference/utils/tests/test_clock.py",
+      "path": "extras/tests/utils/test_clock.py",
       "source_sha256": "988c569044c20d6e5f1ea58d653b4890cbc2856d9878a83a20c0c0b1be00585d",
       "release_sha256": "988c569044c20d6e5f1ea58d653b4890cbc2856d9878a83a20c0c0b1be00585d",
-      "unchanged": true
+      "unchanged": true,
+      "source_path": "src/holosoma_inference/holosoma_inference/utils/tests/test_clock.py"
     },
     {
-      "path": "src/holosoma_inference/holosoma_inference/utils/tests/test_latency.py",
+      "path": "extras/tests/utils/test_latency.py",
       "source_sha256": "6ccd89ebd59610fee3c546961613e8bb5bfbfceb44715e1b6d2335dfa9585d91",
       "release_sha256": "6ccd89ebd59610fee3c546961613e8bb5bfbfceb44715e1b6d2335dfa9585d91",
-      "unchanged": true
+      "unchanged": true,
+      "source_path": "src/holosoma_inference/holosoma_inference/utils/tests/test_latency.py"
     },
     {
       "path": "src/holosoma_inference/holosoma_inference/utils/wandb.py",
@@ -513,16 +523,18 @@
       "unchanged": false
     },
     {
-      "path": "tests/unit/test_deployment_audit.py",
+      "path": "extras/tests/unit/test_deployment_audit.py",
       "source_sha256": "05dc7b89e4f220c2bcc940a5aceb2a33824c3c21a5b48d477823b3f393d4cdc9",
-      "release_sha256": "05dc7b89e4f220c2bcc940a5aceb2a33824c3c21a5b48d477823b3f393d4cdc9",
-      "unchanged": true
+      "release_sha256": "0f02ba75b4286c9c20678ad0c01d7fb491b6c5b6066b4fa2186eb4d662283b98",
+      "unchanged": false,
+      "source_path": "tests/unit/test_deployment_audit.py"
     },
     {
-      "path": "tests/unit/test_deployment_audit_policy.py",
+      "path": "extras/tests/unit/test_deployment_audit_policy.py",
       "source_sha256": "9120a5b2d160edb7636d5b7f2c37f125525b9407835574ddec0552b52a4922ae",
       "release_sha256": "9120a5b2d160edb7636d5b7f2c37f125525b9407835574ddec0552b52a4922ae",
-      "unchanged": true
+      "unchanged": true,
+      "source_path": "tests/unit/test_deployment_audit_policy.py"
     }
   ],
   "submodules": [

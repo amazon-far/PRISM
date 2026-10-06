@@ -21,11 +21,11 @@ from holosoma_inference.policies.wbt import WholeBodyTrackingPolicy
 from holosoma_inference.run_policy import _select_policy_class
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def test_copied_sources_match_the_release_manifest():
-    manifest = json.loads((ROOT / "source_manifest.json").read_text())
+    manifest = json.loads((ROOT / "extras/provenance/source_manifest.json").read_text())
     assert manifest["source_commit"] == "87760c7b8676ca7f9acc295de9bb2ab233e91537"
     for record in manifest["files"]:
         actual = hashlib.sha256((ROOT / record["path"]).read_bytes()).hexdigest()

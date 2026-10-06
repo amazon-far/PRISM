@@ -19,7 +19,7 @@ from holosoma.models.ffs.infer import FFSConfig, FastFoundationStereo
 from holosoma.sensors.remote_stereo import RemoteStereoCamera, RemoteStereoCameraConfig, HEADER_FMT, MAGIC
 from holosoma_inference.policies.wbt import WholeBodyTrackingPolicy
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 spec = importlib.util.spec_from_file_location('depth_check', ROOT / 'scripts/check_depth_stream.py')
 depth_check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(depth_check)
