@@ -1,17 +1,21 @@
 # PRISM · Sim-to-real
 
 Deploy the student policy with **D435i stereo IR → FastFoundationStereo (FFS) → policy**.
-The robot streams stereo images; an Ubuntu GPU laptop connected to the G1 by
-Ethernet runs FFS and the policy. Keep the laptop connected to its full-rated
-high-power AC adapter throughout deployment.
+The robot streams stereo images; an Ubuntu GPU laptop runs FFS and the policy.
 Training and released checkpoints are on [`main`](https://github.com/amazon-far/PRISM/tree/main).
 
-**The canonical G1 mounting has a default downward camera pitch of 47°.
-Training uses 37°: tilt the head back / up by 10° from the canonical position
-before deployment.** This physical adjustment aligns the camera pitch with the
-depth view used during training. Angles are measured below the torso-forward horizontal.
+## Depth
+
+The canonical G1 camera points **47° downward**; training uses **37°**.
+**Tilt the neck/head back (up) by 10° before deployment** to match the training
+view. Angles are measured below the torso-forward horizontal.
 
 ![Local G1 mesh: canonical 47-degree default; tilt the head back and up by 10 degrees to match the trained 37-degree camera pitch](docs/images/neck_pitch_37_vs_47.png)
+
+To verify the alignment, an agent can help build a live comparison of real and
+simulated point clouds at a matched robot pose, checking ground-plane tilt and
+height in a common metric coordinate frame. **This point-cloud comparison tool
+is not included in this repository.**
 
 ## Install
 
@@ -41,41 +45,27 @@ then run `bash install.sh --relay`. This installs NumPy, pyrealsense2 and ZeroMQ
 also install the system packages `libusb-1.0-0`, `usbutils` and `psmisc`. Configure SSH access
 from the GPU computer to this host.
 
-## Laptop, Ethernet and power
+## Local Ethernet Inference Setup
 
-1. Connect the **Ubuntu laptop to the G1 with an Ethernet cable**. Use `ip -br addr`
-   to identify the wired interface and verify its address matches your robot-network
-   configuration. Pass that interface to `--interface`; `eth0` below is an example.
-   The camera host in `--relay-host` must be reachable over this wired connection.
-2. **Plug in the laptop's full-rated high-power adapter before selecting Performance
-   mode.** For this deployment laptop, battery power or a lower-power charger cannot
-   enable the required performance mode. A charging indicator alone is insufficient;
-   use the adapter specified for the laptop. The required wattage depends on the model.
-3. On the **Ubuntu laptop**, have the agent check and enable the supported Performance
-   profile before starting FFS:
+Connect the **Ubuntu GPU laptop to the G1 by Ethernet (a network cable)**.
+Use `ip -br addr` to identify the wired interface and confirm its robot-network
+address. Pass it to `--interface`; `eth0` below is an example. The camera host
+specified by `--relay-host` must also be reachable over this connection.
 
-   ```bash
-   powerprofilesctl list
-   # Continue only if the performance profile is available.
-   powerprofilesctl set performance
-   powerprofilesctl get
-   powerprofilesctl list
-   bash scripts/check_gpu_perf.sh
-   ```
+**Keep the laptop on its full-rated high-power AC adapter and confirm Performance
+mode is enabled** to reduce power-saving downclocking and FFS latency. Our deployment
+laptop requires this adapter to enable the mode; a charging indicator alone is
+insufficient. Use the supported [Performance power profile](https://teams.pages.gitlab.gnome.org/Websites/help.gnome.org/gnome-help/power-profile.html).
 
-   Confirm `get` reports `performance` and inspect `list` for any degraded-performance
-   reason. If the command is missing or the profile is unavailable, check Ubuntu's
-   **Settings → Power**, AC-adapter detection and the laptop's vendor/firmware settings.
-   Do not treat an unavailable profile as successfully enabled.
+An agent can help confirm the active profile, power limits and GPU clocks under
+inference load. Run on the Ubuntu laptop:
 
-Here “turbo/overclock mode” means the supported **high-performance power profile**;
-these commands do not apply manual CPU/GPU clock or voltage overclocks. Availability
-depends on the hardware and power state; see the [GNOME power-profile guide](https://teams.pages.gitlab.gnome.org/Websites/help.gnome.org/gnome-help/power-profile.html)
-and [Ubuntu command reference](https://manpages.ubuntu.com/manpages/noble/man1/powerprofilesctl.1.html).
-Check GPU utilization, clocks and power with `check_gpu_perf.sh` while FFS is running,
-and inspect its latency logs after warm-up. Performance mode is part of this laptop's
-low-latency setup, not a latency guarantee; FFS speed also depends on GPU, input size,
-iteration count and inference backend ([upstream guidance](https://github.com/NVlabs/Fast-FoundationStereo#weights-and-trade-off)).
+```bash
+powerprofilesctl list              # Confirm performance is available.
+powerprofilesctl set performance
+powerprofilesctl get               # Must report performance.
+bash scripts/check_gpu_perf.sh     # Inspect clocks/power while FFS is running.
+```
 
 ## Run
 
