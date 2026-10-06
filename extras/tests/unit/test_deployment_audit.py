@@ -12,8 +12,8 @@ import pytest
 from holosoma.utils.deployment_audit import DeploymentAudit, create_deployment_audit, sha256_file
 
 
-ROOT = Path(__file__).resolve().parents[2]
-spec = importlib.util.spec_from_file_location("depth_evidence", ROOT / "scripts/compare_real_depth_evidence.py")
+ROOT = Path(__file__).resolve().parents[3]
+spec = importlib.util.spec_from_file_location("depth_evidence", ROOT / "extras/analysis/compare_real_depth_evidence.py")
 compare_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(compare_module)
 

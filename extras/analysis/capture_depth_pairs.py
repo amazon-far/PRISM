@@ -11,7 +11,7 @@ actually sees.
 
 Usage (on the camera host):
 
-    python scripts/capture_depth_pairs.py --frames 200 --out depth_pairs.npz
+    python extras/analysis/capture_depth_pairs.py --frames 200 --out depth_pairs.npz
 """
 
 from __future__ import annotations

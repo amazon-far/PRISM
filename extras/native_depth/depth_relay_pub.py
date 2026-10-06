@@ -10,7 +10,7 @@ that subscribers can use ZMQ_CONFLATE and always read the newest frame.
 
 Usage (on the camera host, after image_server.py is already running):
 
-    python scripts/depth_relay_pub.py --bind tcp://*:5601
+    python extras/native_depth/depth_relay_pub.py --bind tcp://*:5601
 """
 
 from __future__ import annotations
@@ -57,7 +57,7 @@ def attach_shm(name: str, timeout: float) -> shared_memory.SharedMemory:
             if time.monotonic() >= deadline:
                 raise RuntimeError(
                     f"shared memory '{name}' not found after {timeout:.0f}s. "
-                    "Start image_server.py (e.g. via real_depth.sh) on this host first."
+                    "Start image_server.py (e.g. via extras/native_depth/real_depth.sh) on this host first."
                 ) from None
             time.sleep(0.2)
 

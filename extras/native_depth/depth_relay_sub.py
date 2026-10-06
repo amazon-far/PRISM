@@ -10,7 +10,7 @@ raises if it is missing.
 
 Usage (on the compute host):
 
-    python scripts/depth_relay_sub.py --connect tcp://<camera-host>:5601
+    python extras/native_depth/depth_relay_sub.py --connect tcp://<camera-host>:5601
 """
 
 from __future__ import annotations

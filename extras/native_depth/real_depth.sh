@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 python_bin="${PRISM_PYTHON:-python3}"
 export PYTHONPATH="$ROOT_DIR/src/holosoma:$ROOT_DIR/src/holosoma_inference"
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-  echo "Usage: bash real_depth.sh [image-server options]"
+  echo "Usage: bash extras/native_depth/real_depth.sh [image-server options]"
   echo "Streams D435i depth using the original real_d435i configuration."
   exit 0
 fi
